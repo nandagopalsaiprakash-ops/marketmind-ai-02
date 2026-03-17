@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Sparkles, Zap } from "lucide-react";
+import { Send, Sparkles, Zap, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useChatPersistence } from "@/hooks/useChatPersistence";
 
 interface Message {
   id: string;
@@ -23,10 +24,21 @@ interface ChatAssistantProps {
 }
 
 export default function ChatAssistant({ technicalMode, onTechnicalModeChange, onNewMessage }: ChatAssistantProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const {
+    sessions,
+    activeSessionId,
+    messages,
+    setMessages,
+    loadSession,
+    createSession,
+    saveMessage,
+    newChat,
+  } = useChatPersistence();
+
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -41,10 +53,7 @@ export default function ChatAssistant({ technicalMode, onTechnicalModeChange, on
         "Content-Type": "application/json",
         Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify({
-        messages: allMessages,
-        technicalMode,
-      }),
+      body: JSON.stringify({ messages: allMessages, technicalMode }),
     });
 
     if (!resp.ok) {
@@ -65,73 +74,52 @@ export default function ChatAssistant({ technicalMode, onTechnicalModeChange, on
     const decoder = new TextDecoder();
     let textBuffer = "";
     let assistantSoFar = "";
-    let streamDone = false;
 
+    const processLine = (line: string) => {
+      if (line.endsWith("\r")) line = line.slice(0, -1);
+      if (line.startsWith(":") || line.trim() === "" || !line.startsWith("data: ")) return false;
+      const jsonStr = line.slice(6).trim();
+      if (jsonStr === "[DONE]") return true;
+      try {
+        const parsed = JSON.parse(jsonStr);
+        const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+        if (content) {
+          assistantSoFar += content;
+          setMessages(prev => {
+            const last = prev[prev.length - 1];
+            if (last?.role === "assistant") {
+              return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantSoFar } : m));
+            }
+            return [...prev, { id: crypto.randomUUID(), role: "assistant" as const, content: assistantSoFar, timestamp: new Date() }];
+          });
+        }
+      } catch {
+        return false;
+      }
+      return false;
+    };
+
+    let streamDone = false;
     while (!streamDone) {
       const { done, value } = await reader.read();
       if (done) break;
       textBuffer += decoder.decode(value, { stream: true });
-
       let newlineIndex: number;
       while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
-        let line = textBuffer.slice(0, newlineIndex);
+        const line = textBuffer.slice(0, newlineIndex);
         textBuffer = textBuffer.slice(newlineIndex + 1);
-
-        if (line.endsWith("\r")) line = line.slice(0, -1);
-        if (line.startsWith(":") || line.trim() === "") continue;
-        if (!line.startsWith("data: ")) continue;
-
-        const jsonStr = line.slice(6).trim();
-        if (jsonStr === "[DONE]") {
-          streamDone = true;
-          break;
-        }
-
-        try {
-          const parsed = JSON.parse(jsonStr);
-          const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-          if (content) {
-            assistantSoFar += content;
-            setMessages(prev => {
-              const last = prev[prev.length - 1];
-              if (last?.role === "assistant") {
-                return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantSoFar } : m));
-              }
-              return [...prev, { id: crypto.randomUUID(), role: "assistant", content: assistantSoFar, timestamp: new Date() }];
-            });
-          }
-        } catch {
-          textBuffer = line + "\n" + textBuffer;
-          break;
-        }
+        if (processLine(line)) { streamDone = true; break; }
       }
     }
 
-    // Final flush
+    // Flush remaining
     if (textBuffer.trim()) {
-      for (let raw of textBuffer.split("\n")) {
-        if (!raw) continue;
-        if (raw.endsWith("\r")) raw = raw.slice(0, -1);
-        if (raw.startsWith(":") || raw.trim() === "") continue;
-        if (!raw.startsWith("data: ")) continue;
-        const jsonStr = raw.slice(6).trim();
-        if (jsonStr === "[DONE]") continue;
-        try {
-          const parsed = JSON.parse(jsonStr);
-          const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-          if (content) {
-            assistantSoFar += content;
-            setMessages(prev => {
-              const last = prev[prev.length - 1];
-              if (last?.role === "assistant") {
-                return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantSoFar } : m));
-              }
-              return [...prev, { id: crypto.randomUUID(), role: "assistant", content: assistantSoFar, timestamp: new Date() }];
-            });
-          }
-        } catch { /* ignore */ }
+      for (const raw of textBuffer.split("\n")) {
+        if (raw) processLine(raw);
       }
     }
+
+    return assistantSoFar;
   };
 
   const handleSend = async () => {
@@ -152,13 +140,28 @@ export default function ChatAssistant({ technicalMode, onTechnicalModeChange, on
     setIsStreaming(true);
     onNewMessage(trimmed);
 
+    // Ensure we have a session
+    let sessionId = activeSessionId;
+    if (!sessionId) {
+      sessionId = await createSession(trimmed);
+    }
+
+    // Save user message
+    if (sessionId) {
+      await saveMessage(sessionId, "user", trimmed);
+    }
+
     const apiMessages = [...messages, userMsg].map(m => ({
       role: m.role,
       content: m.role === "user" && m.id === userMsg.id ? fullContent : m.content,
     }));
 
     try {
-      await streamChat(apiMessages);
+      const assistantContent = await streamChat(apiMessages);
+      // Save assistant response
+      if (sessionId && assistantContent) {
+        await saveMessage(sessionId, "assistant", assistantContent);
+      }
     } catch (e) {
       console.error("Stream error:", e);
     } finally {
@@ -177,23 +180,60 @@ export default function ChatAssistant({ technicalMode, onTechnicalModeChange, on
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="border-b border-border p-4 flex items-center justify-between">
-        <div>
-          <h2 className="font-display font-bold text-lg text-foreground">AI Marketing Assistant</h2>
-          <p className="text-xs text-muted-foreground">Powered by Lovable AI — ask anything about digital & technical marketing</p>
+        <div className="flex items-center gap-3">
+          <div>
+            <h2 className="font-display font-bold text-lg text-foreground">AI Marketing Assistant</h2>
+            <p className="text-xs text-muted-foreground">Powered by Lovable AI — ask anything about digital & technical marketing</p>
+          </div>
         </div>
-        <button
-          onClick={() => onTechnicalModeChange(!technicalMode)}
-          className={cn(
-            "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
-            technicalMode
-              ? "gradient-accent text-accent-foreground shadow-glow"
-              : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-          )}
-        >
-          <Zap className="w-3 h-3" />
-          Technical Mode {technicalMode ? "ON" : "OFF"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => { newChat(); setShowHistory(false); }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all"
+          >
+            <Plus className="w-3 h-3" /> New Chat
+          </button>
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className={cn(
+              "px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+              showHistory ? "gradient-accent text-accent-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            )}
+          >
+            History ({sessions.length})
+          </button>
+          <button
+            onClick={() => onTechnicalModeChange(!technicalMode)}
+            className={cn(
+              "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+              technicalMode ? "gradient-accent text-accent-foreground shadow-glow" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            )}
+          >
+            <Zap className="w-3 h-3" />
+            Technical {technicalMode ? "ON" : "OFF"}
+          </button>
+        </div>
       </div>
+
+      {/* History panel */}
+      {showHistory && sessions.length > 0 && (
+        <div className="border-b border-border px-4 py-2 max-h-40 overflow-y-auto space-y-1">
+          {sessions.map(s => (
+            <button
+              key={s.id}
+              onClick={() => { loadSession(s.id); setShowHistory(false); }}
+              className={cn(
+                "w-full text-left px-3 py-2 rounded-lg text-xs transition-all truncate",
+                activeSessionId === s.id
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              )}
+            >
+              {s.title}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Category Tags */}
       <div className="px-4 py-2 flex gap-2 overflow-x-auto border-b border-border">
@@ -203,9 +243,7 @@ export default function ChatAssistant({ technicalMode, onTechnicalModeChange, on
             onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
             className={cn(
               "px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all",
-              activeCategory === cat
-                ? "gradient-primary text-primary-foreground"
-                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              activeCategory === cat ? "gradient-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
             )}
           >
             {cat}
@@ -268,11 +306,7 @@ export default function ChatAssistant({ technicalMode, onTechnicalModeChange, on
         </AnimatePresence>
 
         {isStreaming && messages[messages.length - 1]?.role !== "assistant" && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex items-center gap-2 text-muted-foreground text-sm"
-          >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 text-muted-foreground text-sm">
             <div className="flex gap-1">
               <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
               <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
