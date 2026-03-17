@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { MessageSquare, GraduationCap, Lightbulb, Wrench, Brain, ChevronRight } from "lucide-react";
+import { MessageSquare, GraduationCap, Lightbulb, Wrench, Brain, ChevronRight, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 type Section = "chat" | "academy" | "strategy" | "tools";
 
