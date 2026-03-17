@@ -81,7 +81,15 @@ export default function AppSidebar({ activeSection, onSectionChange, conversatio
 
       {/* Footer */}
       {!collapsed && (
-        <div className="p-3 border-t border-sidebar-border">
+        <div className="p-3 border-t border-sidebar-border space-y-2">
+          {user && (
+            <div className="flex items-center gap-2">
+              <p className="text-[10px] text-muted-foreground truncate flex-1">{user.email}</p>
+              <button onClick={signOut} className="text-muted-foreground hover:text-foreground transition-colors" title="Sign out">
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
           <p className="text-[10px] text-muted-foreground text-center">MarketMind v1.0</p>
         </div>
       )}
