@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Sparkles, Zap, Plus } from "lucide-react";
+import { Send, Sparkles, Zap, Plus, Copy, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
@@ -39,12 +39,19 @@ export default function ChatAssistant({ technicalMode, onTechnicalModeChange, on
   const [isStreaming, setIsStreaming] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isStreaming]);
+
+  const copyMessage = (id: string, content: string) => {
+    navigator.clipboard.writeText(content);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   const streamChat = async (allMessages: { role: string; content: string }[]) => {
     const resp = await fetch(CHAT_URL, {
@@ -61,7 +68,7 @@ export default function ChatAssistant({ technicalMode, onTechnicalModeChange, on
       if (resp.status === 429) {
         toast({ title: "Rate Limited", description: errorData.error || "Please try again in a moment.", variant: "destructive" });
       } else if (resp.status === 402) {
-        toast({ title: "Credits Exhausted", description: errorData.error || "Please add credits to your workspace.", variant: "destructive" });
+        toast({ title: "Credits Exhausted", description: errorData.error || "Please add credits.", variant: "destructive" });
       } else {
         toast({ title: "Error", description: errorData.error || "Something went wrong.", variant: "destructive" });
       }
@@ -112,7 +119,6 @@ export default function ChatAssistant({ technicalMode, onTechnicalModeChange, on
       }
     }
 
-    // Flush remaining
     if (textBuffer.trim()) {
       for (const raw of textBuffer.split("\n")) {
         if (raw) processLine(raw);
@@ -140,16 +146,11 @@ export default function ChatAssistant({ technicalMode, onTechnicalModeChange, on
     setIsStreaming(true);
     onNewMessage(trimmed);
 
-    // Ensure we have a session
     let sessionId = activeSessionId;
     if (!sessionId) {
       sessionId = await createSession(trimmed);
     }
-
-    // Save user message
-    if (sessionId) {
-      await saveMessage(sessionId, "user", trimmed);
-    }
+    if (sessionId) await saveMessage(sessionId, "user", trimmed);
 
     const apiMessages = [...messages, userMsg].map(m => ({
       role: m.role,
@@ -158,7 +159,6 @@ export default function ChatAssistant({ technicalMode, onTechnicalModeChange, on
 
     try {
       const assistantContent = await streamChat(apiMessages);
-      // Save assistant response
       if (sessionId && assistantContent) {
         await saveMessage(sessionId, "assistant", assistantContent);
       }
@@ -179,70 +179,77 @@ export default function ChatAssistant({ technicalMode, onTechnicalModeChange, on
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="border-b border-border p-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div>
-            <h2 className="font-display font-bold text-lg text-foreground">AI Marketing Assistant</h2>
-            <p className="text-xs text-muted-foreground">Powered by Lovable AI — ask anything about digital & technical marketing</p>
-          </div>
+      <div className="border-b border-border p-3 md:p-4 flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <h2 className="font-display font-bold text-base md:text-lg text-foreground">AI Marketing Assistant</h2>
+          <p className="text-[10px] md:text-xs text-muted-foreground truncate">Powered by Lovable AI</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
           <button
             onClick={() => { newChat(); setShowHistory(false); }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all"
+            className="flex items-center gap-1 px-2 md:px-3 py-1.5 rounded-full text-[10px] md:text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all"
           >
-            <Plus className="w-3 h-3" /> New Chat
+            <Plus className="w-3 h-3" /> <span className="hidden sm:inline">New</span>
           </button>
           <button
             onClick={() => setShowHistory(!showHistory)}
             className={cn(
-              "px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+              "px-2 md:px-3 py-1.5 rounded-full text-[10px] md:text-xs font-medium transition-all",
               showHistory ? "gradient-accent text-accent-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
             )}
           >
-            History ({sessions.length})
+            History
           </button>
           <button
             onClick={() => onTechnicalModeChange(!technicalMode)}
             className={cn(
-              "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+              "flex items-center gap-1 px-2 md:px-3 py-1.5 rounded-full text-[10px] md:text-xs font-medium transition-all",
               technicalMode ? "gradient-accent text-accent-foreground shadow-glow" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
             )}
           >
             <Zap className="w-3 h-3" />
-            Technical {technicalMode ? "ON" : "OFF"}
+            <span className="hidden sm:inline">Technical</span> {technicalMode ? "ON" : "OFF"}
           </button>
         </div>
       </div>
 
       {/* History panel */}
-      {showHistory && sessions.length > 0 && (
-        <div className="border-b border-border px-4 py-2 max-h-40 overflow-y-auto space-y-1">
-          {sessions.map(s => (
-            <button
-              key={s.id}
-              onClick={() => { loadSession(s.id); setShowHistory(false); }}
-              className={cn(
-                "w-full text-left px-3 py-2 rounded-lg text-xs transition-all truncate",
-                activeSessionId === s.id
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              )}
-            >
-              {s.title}
-            </button>
-          ))}
-        </div>
-      )}
+      <AnimatePresence>
+        {showHistory && sessions.length > 0 && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="border-b border-border overflow-hidden"
+          >
+            <div className="px-4 py-2 max-h-40 overflow-y-auto space-y-1">
+              {sessions.map(s => (
+                <button
+                  key={s.id}
+                  onClick={() => { loadSession(s.id); setShowHistory(false); }}
+                  className={cn(
+                    "w-full text-left px-3 py-2 rounded-lg text-xs transition-all truncate",
+                    activeSessionId === s.id
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  )}
+                >
+                  {s.title}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Category Tags */}
-      <div className="px-4 py-2 flex gap-2 overflow-x-auto border-b border-border">
+      <div className="px-3 md:px-4 py-2 flex gap-1.5 md:gap-2 overflow-x-auto border-b border-border">
         {categories.map(cat => (
           <button
             key={cat}
             onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
             className={cn(
-              "px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all",
+              "px-2.5 md:px-3 py-1 rounded-full text-[10px] md:text-xs font-medium whitespace-nowrap transition-all",
               activeCategory === cat ? "gradient-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
             )}
           >
@@ -252,7 +259,7 @@ export default function ChatAssistant({ technicalMode, onTechnicalModeChange, on
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-4">
         {messages.length === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -291,14 +298,24 @@ export default function ChatAssistant({ technicalMode, onTechnicalModeChange, on
               className={cn("flex", msg.role === "user" ? "justify-end" : "justify-start")}
             >
               {msg.role === "user" ? (
-                <div className="max-w-[75%] gradient-primary text-primary-foreground px-4 py-3 rounded-2xl rounded-br-md text-sm">
+                <div className="max-w-[85%] md:max-w-[75%] gradient-primary text-primary-foreground px-4 py-3 rounded-2xl rounded-br-md text-sm">
                   {msg.content}
                 </div>
               ) : (
-                <div className="max-w-[85%] bg-card border border-border rounded-2xl rounded-bl-md p-4">
+                <div className="max-w-[95%] md:max-w-[85%] bg-card border border-border rounded-2xl rounded-bl-md p-4 group relative">
+                  <button
+                    onClick={() => copyMessage(msg.id, msg.content)}
+                    className="absolute top-2 right-2 p-1.5 rounded-lg bg-secondary/80 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-foreground transition-all"
+                    title="Copy response"
+                  >
+                    {copiedId === msg.id ? <Check className="w-3 h-3 text-primary" /> : <Copy className="w-3 h-3" />}
+                  </button>
                   <div className="prose prose-sm prose-invert max-w-none [&_h1]:font-display [&_h1]:text-lg [&_h1]:text-foreground [&_h2]:font-display [&_h2]:text-base [&_h2]:text-foreground [&_h3]:font-display [&_h3]:text-sm [&_h3]:text-foreground [&_p]:text-secondary-foreground [&_p]:text-sm [&_p]:leading-relaxed [&_li]:text-secondary-foreground [&_li]:text-sm [&_strong]:text-foreground [&_code]:text-primary [&_code]:bg-secondary [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_a]:text-primary [&_blockquote]:border-primary/30 [&_hr]:border-border">
                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                   </div>
+                  <p className="text-[9px] text-muted-foreground mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </p>
                 </div>
               )}
             </motion.div>
@@ -319,8 +336,8 @@ export default function ChatAssistant({ technicalMode, onTechnicalModeChange, on
       </div>
 
       {/* Input */}
-      <div className="border-t border-border p-4">
-        <div className="flex items-center gap-2 bg-card border border-border rounded-xl px-4 py-2 focus-within:border-primary/50 focus-within:shadow-glow transition-all">
+      <div className="border-t border-border p-3 md:p-4">
+        <div className="flex items-center gap-2 bg-card border border-border rounded-xl px-3 md:px-4 py-2 focus-within:border-primary/50 focus-within:shadow-glow transition-all">
           <input
             value={input}
             onChange={e => setInput(e.target.value)}
