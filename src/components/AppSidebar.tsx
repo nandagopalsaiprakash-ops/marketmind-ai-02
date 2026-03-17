@@ -20,6 +20,7 @@ const navItems = [
 
 export default function AppSidebar({ activeSection, onSectionChange, conversationHistory }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const { user, signOut } = useAuth();
 
   return (
     <aside className={cn(
