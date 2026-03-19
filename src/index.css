@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
+  :root, .dark {
     --background: 228 15% 8%;
     --foreground: 210 20% 92%;
 
@@ -52,6 +52,53 @@
     --gradient-surface: linear-gradient(180deg, hsl(228 14% 14%), hsl(228 14% 10%));
     --shadow-glow: 0 0 30px -5px hsl(168 80% 50% / 0.2);
     --shadow-card: 0 4px 24px -4px hsl(0 0% 0% / 0.3);
+  }
+
+  .light {
+    --background: 210 20% 97%;
+    --foreground: 228 15% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 228 15% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 228 15% 12%;
+
+    --primary: 168 80% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 15% 92%;
+    --secondary-foreground: 228 12% 30%;
+
+    --muted: 210 15% 94%;
+    --muted-foreground: 215 12% 45%;
+
+    --accent: 260 55% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 15% 88%;
+    --input: 210 15% 88%;
+    --ring: 168 80% 40%;
+
+    --sidebar-background: 210 18% 95%;
+    --sidebar-foreground: 228 12% 40%;
+    --sidebar-primary: 168 80% 40%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 15% 90%;
+    --sidebar-accent-foreground: 228 15% 12%;
+    --sidebar-border: 210 15% 88%;
+    --sidebar-ring: 168 80% 40%;
+
+    /* Custom tokens */
+    --gradient-primary: linear-gradient(135deg, hsl(168 80% 40%), hsl(200 80% 45%));
+    --gradient-accent: linear-gradient(135deg, hsl(260 55% 55%), hsl(300 55% 50%));
+    --gradient-warm: linear-gradient(135deg, hsl(35 90% 50%), hsl(15 85% 50%));
+    --gradient-surface: linear-gradient(180deg, hsl(210 15% 97%), hsl(210 15% 94%));
+    --shadow-glow: 0 0 30px -5px hsl(168 80% 40% / 0.15);
+    --shadow-card: 0 4px 24px -4px hsl(228 15% 12% / 0.08);
   }
 }
 
