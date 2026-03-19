@@ -24,7 +24,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  const toggleTheme = () => setTheme(prev => (prev === "dark" ? "light" : "dark"));
+  const toggleTheme = () => {
+    const root = document.documentElement;
+    root.classList.add("theme-transition");
+    setTheme(prev => (prev === "dark" ? "light" : "dark"));
+    // Remove transition class after animation completes to avoid interfering with other animations
+    setTimeout(() => root.classList.remove("theme-transition"), 450);
+  };
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
