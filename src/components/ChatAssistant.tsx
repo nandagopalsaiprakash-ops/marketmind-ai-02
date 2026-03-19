@@ -1,10 +1,13 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Send, Sparkles, Zap, Plus, Copy, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useChatPersistence } from "@/hooks/useChatPersistence";
+import { detectToolsInText } from "@/data/toolsDatabase";
+import ToolCards from "@/components/ToolCards";
+import VoiceInput from "@/components/VoiceInput";
 
 interface Message {
   id: string;
