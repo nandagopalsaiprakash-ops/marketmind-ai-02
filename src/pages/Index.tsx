@@ -5,6 +5,8 @@ import LearningAcademy from "@/components/LearningAcademy";
 import StrategyGenerator from "@/components/StrategyGenerator";
 import ToolsDashboard from "@/components/ToolsDashboard";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTheme } from "@/hooks/useTheme";
+import { Sun, Moon } from "lucide-react";
 
 type Section = "chat" | "academy" | "strategy" | "tools";
 
@@ -13,6 +15,7 @@ const Index = () => {
   const [technicalMode, setTechnicalMode] = useState(false);
   const [conversationHistory, setConversationHistory] = useState<string[]>([]);
   const isMobile = useIsMobile();
+  const { theme, toggleTheme } = useTheme();
 
   const handleNewMessage = (msg: string) => {
     setConversationHistory(prev => [...prev, msg]);
@@ -34,7 +37,16 @@ const Index = () => {
               <span className="text-muted-foreground font-normal text-xs md:text-sm ml-2 hidden sm:inline">AI Assistant for Digital & Technical Marketing</span>
             </h1>
           </div>
-          <p className="text-xs text-muted-foreground hidden lg:block">Learn marketing · Build strategies · Optimize campaigns</p>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+            <p className="text-xs text-muted-foreground hidden lg:block">Learn marketing · Build strategies · Optimize campaigns</p>
+          </div>
         </header>
 
         {/* Content */}
