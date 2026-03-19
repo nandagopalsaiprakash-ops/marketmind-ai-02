@@ -145,20 +145,17 @@
   }
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: hsl(228 14% 10%);
-}
-::-webkit-scrollbar-thumb {
-  background: hsl(228 14% 25%);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(228 14% 35%);
-}
+/* Scrollbar - dark */
+.dark ::-webkit-scrollbar { width: 6px; }
+.dark ::-webkit-scrollbar-track { background: hsl(228 14% 10%); }
+.dark ::-webkit-scrollbar-thumb { background: hsl(228 14% 25%); border-radius: 3px; }
+.dark ::-webkit-scrollbar-thumb:hover { background: hsl(228 14% 35%); }
+
+/* Scrollbar - light */
+.light ::-webkit-scrollbar { width: 6px; }
+.light ::-webkit-scrollbar-track { background: hsl(210 15% 94%); }
+.light ::-webkit-scrollbar-thumb { background: hsl(210 15% 80%); border-radius: 3px; }
+.light ::-webkit-scrollbar-thumb:hover { background: hsl(210 15% 70%); }
 
 /* Typing animation */
 @keyframes blink {
