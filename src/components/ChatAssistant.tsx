@@ -316,6 +316,7 @@ export default function ChatAssistant({ technicalMode, onTechnicalModeChange, on
                   <div className="prose prose-sm prose-invert max-w-none [&_h1]:font-display [&_h1]:text-lg [&_h1]:text-foreground [&_h2]:font-display [&_h2]:text-base [&_h2]:text-foreground [&_h3]:font-display [&_h3]:text-sm [&_h3]:text-foreground [&_p]:text-secondary-foreground [&_p]:text-sm [&_p]:leading-relaxed [&_li]:text-secondary-foreground [&_li]:text-sm [&_strong]:text-foreground [&_code]:text-primary [&_code]:bg-secondary [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_a]:text-primary [&_blockquote]:border-primary/30 [&_hr]:border-border">
                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                   </div>
+                  <ToolCards tools={detectToolsInText(msg.content)} />
                   <p className="text-[9px] text-muted-foreground mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
