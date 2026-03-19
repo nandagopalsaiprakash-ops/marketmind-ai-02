@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-type Section = "chat" | "academy" | "strategy" | "tools";
+type Section = "chat" | "academy" | "strategy" | "tools" | "content" | "reports";
 
 interface AppSidebarProps {
   activeSection: Section;
@@ -16,6 +16,8 @@ const navItems = [
   { id: "chat" as Section, label: "AI Assistant", icon: MessageSquare },
   { id: "academy" as Section, label: "Learning Academy", icon: GraduationCap },
   { id: "strategy" as Section, label: "Strategy Generator", icon: Lightbulb },
+  { id: "content" as Section, label: "Content Generator", icon: PenTool },
+  { id: "reports" as Section, label: "Marketing Reports", icon: FileText },
   { id: "tools" as Section, label: "Marketing Tools", icon: Wrench },
 ];
 

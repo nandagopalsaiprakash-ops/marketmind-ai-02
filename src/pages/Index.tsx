@@ -4,11 +4,13 @@ import ChatAssistant from "@/components/ChatAssistant";
 import LearningAcademy from "@/components/LearningAcademy";
 import StrategyGenerator from "@/components/StrategyGenerator";
 import ToolsDashboard from "@/components/ToolsDashboard";
+import ContentGenerator from "@/components/ContentGenerator";
+import ReportGenerator from "@/components/ReportGenerator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "@/hooks/useTheme";
 import { Sun, Moon } from "lucide-react";
 
-type Section = "chat" | "academy" | "strategy" | "tools";
+type Section = "chat" | "academy" | "strategy" | "tools" | "content" | "reports";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState<Section>("chat");
@@ -29,7 +31,6 @@ const Index = () => {
         conversationHistory={conversationHistory}
       />
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Header */}
         <header className={`border-b border-border px-4 md:px-6 py-3 flex items-center justify-between bg-card/50 backdrop-blur-sm ${isMobile ? 'pl-14' : ''}`}>
           <div>
             <h1 className="font-display font-bold text-foreground">
@@ -49,7 +50,6 @@ const Index = () => {
           </div>
         </header>
 
-        {/* Content */}
         <div className="flex-1 overflow-hidden">
           {activeSection === "chat" && (
             <ChatAssistant
@@ -60,6 +60,8 @@ const Index = () => {
           )}
           {activeSection === "academy" && <LearningAcademy />}
           {activeSection === "strategy" && <StrategyGenerator />}
+          {activeSection === "content" && <ContentGenerator />}
+          {activeSection === "reports" && <ReportGenerator />}
           {activeSection === "tools" && <ToolsDashboard />}
         </div>
       </main>
