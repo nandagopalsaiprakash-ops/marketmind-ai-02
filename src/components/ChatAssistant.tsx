@@ -350,6 +350,7 @@ export default function ChatAssistant({ technicalMode, onTechnicalModeChange, on
             className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
             disabled={isStreaming}
           />
+          <VoiceInput onTranscript={(text) => setInput(prev => prev ? `${prev} ${text}` : text)} disabled={isStreaming} />
           <button
             onClick={handleSend}
             disabled={!input.trim() || isStreaming}
