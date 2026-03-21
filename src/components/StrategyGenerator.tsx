@@ -3,7 +3,6 @@ import { Lightbulb, Rocket, Target, Megaphone, PenTool, Clock, DollarSign, BarCh
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import ReactMarkdown from "react-markdown";
 
 interface Strategy {
   strategy: string;
@@ -54,7 +53,7 @@ export default function StrategyGenerator() {
 
       const data = await resp.json();
       setResult(data);
-    } catch (e) {
+    } catch {
       toast({ title: "Error", description: "Failed to generate strategy", variant: "destructive" });
     } finally {
       setIsGenerating(false);
@@ -73,14 +72,15 @@ export default function StrategyGenerator() {
     <div className="p-4 md:p-6 space-y-6 overflow-y-auto h-full">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-display font-bold text-xl md:text-2xl text-foreground">Strategy Generator</h2>
-          <p className="text-sm text-muted-foreground mt-1">AI-powered custom marketing strategies</p>
+          <h2 className="font-display font-bold text-h2 text-foreground">Strategy Generator</h2>
+          <p className="text-body text-muted-foreground mt-1">AI-powered custom marketing strategies</p>
         </div>
-        <div className="w-10 h-10 rounded-xl gradient-accent flex items-center justify-center shadow-glow">
-          <Sparkles className="w-5 h-5 text-accent-foreground" />
+        <div className="w-11 h-11 rounded-2xl gradient-accent flex items-center justify-center shadow-glow flex-shrink-0">
+          <Sparkles className="w-6 h-6 text-accent-foreground" />
         </div>
       </div>
 
+      {/* Input cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <SelectField label="Business Type" value={business} options={businessTypes} onChange={setBusiness} />
         <SelectField label="Target Audience" value={audience} options={audiences} onChange={setAudience} />
@@ -90,7 +90,7 @@ export default function StrategyGenerator() {
       <button
         onClick={handleGenerate}
         disabled={!business || !audience || !goal || isGenerating}
-        className="gradient-primary text-primary-foreground px-6 py-3 rounded-xl font-display font-semibold text-sm disabled:opacity-40 hover:shadow-glow transition-all flex items-center gap-2"
+        className="gradient-primary text-primary-foreground px-6 py-3 rounded-2xl font-display font-semibold text-body disabled:opacity-40 hover:shadow-glow transition-all flex items-center gap-2 shadow-glow"
       >
         {isGenerating ? (
           <>
@@ -105,6 +105,18 @@ export default function StrategyGenerator() {
         )}
       </button>
 
+      {/* Loading skeleton */}
+      {isGenerating && (
+        <div className="space-y-3">
+          <div className="glass-card p-5 space-y-3">
+            <div className="skeleton-shimmer h-6 w-2/3 rounded-lg" />
+            <div className="skeleton-shimmer h-4 w-full rounded-lg" />
+            <div className="skeleton-shimmer h-4 w-5/6 rounded-lg" />
+            <div className="skeleton-shimmer h-4 w-3/4 rounded-lg" />
+          </div>
+        </div>
+      )}
+
       <AnimatePresence>
         {result && (
           <motion.div
@@ -112,53 +124,53 @@ export default function StrategyGenerator() {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-4"
           >
-            {/* Strategy Header */}
-            <div className="bg-card border border-border rounded-xl p-5">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Lightbulb className="w-5 h-5 text-primary" />
-                  <h3 className="font-display font-bold text-foreground">{result.strategy}</h3>
+            <div className="glass-card p-5">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+                    <Lightbulb className="w-5 h-5 text-primary-foreground" />
+                  </div>
+                  <h3 className="font-display font-bold text-h3 text-foreground">{result.strategy}</h3>
                 </div>
                 <button
                   onClick={copyStrategy}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-secondary-foreground text-xs hover:bg-secondary/80 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-secondary text-secondary-foreground text-caption hover:bg-secondary/80 transition-colors"
                 >
-                  {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                  {copied ? <Check className="w-3 h-3 text-success" /> : <Copy className="w-3 h-3" />}
                   {copied ? "Copied!" : "Copy"}
                 </button>
               </div>
               {result.overview && (
-                <p className="text-sm text-secondary-foreground leading-relaxed mb-4">{result.overview}</p>
+                <p className="text-body text-secondary-foreground leading-relaxed mb-5 bg-secondary/30 rounded-xl p-3 border-l-2 border-primary/50">{result.overview}</p>
               )}
 
-              <Section icon={Target} title="Growth Tactics" items={result.tactics} />
-              <Section icon={Megaphone} title="Recommended Channels" items={result.channels} chip />
-              <Section icon={PenTool} title="Content Ideas" items={result.contentIdeas} />
+              <Section icon={Target} title="Growth Tactics" items={result.tactics} color="primary" />
+              <Section icon={Megaphone} title="Recommended Channels" items={result.channels} chip color="accent" />
+              <Section icon={PenTool} title="Content Ideas" items={result.contentIdeas} color="info" />
               
-              {/* New sections */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
                 {result.timeline && (
-                  <div className="bg-secondary/50 rounded-lg p-4">
+                  <div className="glass-panel p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <Clock className="w-4 h-4 text-primary" />
-                      <h4 className="text-sm font-semibold text-foreground">Timeline</h4>
+                      <Clock className="w-4 h-4 text-warning" />
+                      <h4 className="text-body font-semibold text-foreground">Timeline</h4>
                     </div>
-                    <p className="text-xs text-secondary-foreground leading-relaxed">{result.timeline}</p>
+                    <p className="text-caption text-secondary-foreground leading-relaxed">{result.timeline}</p>
                   </div>
                 )}
                 {result.budget && (
-                  <div className="bg-secondary/50 rounded-lg p-4">
+                  <div className="glass-panel p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <DollarSign className="w-4 h-4 text-primary" />
-                      <h4 className="text-sm font-semibold text-foreground">Budget</h4>
+                      <DollarSign className="w-4 h-4 text-success" />
+                      <h4 className="text-body font-semibold text-foreground">Budget</h4>
                     </div>
-                    <p className="text-xs text-secondary-foreground leading-relaxed">{result.budget}</p>
+                    <p className="text-caption text-secondary-foreground leading-relaxed">{result.budget}</p>
                   </div>
                 )}
               </div>
 
               {result.kpis?.length > 0 && (
-                <Section icon={BarChart3} title="Key Performance Indicators" items={result.kpis} chip />
+                <Section icon={BarChart3} title="Key Performance Indicators" items={result.kpis} chip color="technical" />
               )}
             </div>
           </motion.div>
@@ -171,11 +183,11 @@ export default function StrategyGenerator() {
 function SelectField({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
   return (
     <div>
-      <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{label}</label>
+      <label className="text-caption font-medium text-muted-foreground mb-1.5 block">{label}</label>
       <select
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="w-full bg-card border border-border rounded-lg px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary/50 focus:shadow-glow transition-all appearance-none cursor-pointer"
+        className="w-full bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl px-3 py-2.5 text-body text-foreground outline-none focus:border-primary/50 focus:shadow-glow transition-all appearance-none cursor-pointer"
       >
         <option value="">Select {label.toLowerCase()}</option>
         {options.map(o => <option key={o} value={o}>{o}</option>)}
@@ -184,27 +196,35 @@ function SelectField({ label, value, options, onChange }: { label: string; value
   );
 }
 
-function Section({ icon: Icon, title, items, chip }: { icon: React.ElementType; title: string; items: string[]; chip?: boolean }) {
+function Section({ icon: Icon, title, items, chip, color = "primary" }: { icon: React.ElementType; title: string; items: string[]; chip?: boolean; color?: string }) {
   if (!items || items.length === 0) return null;
+  const colorClasses: Record<string, string> = {
+    primary: "text-primary",
+    accent: "text-accent",
+    info: "text-info",
+    success: "text-success",
+    warning: "text-warning",
+    technical: "text-technical",
+  };
   return (
-    <div className="mt-4">
-      <div className="flex items-center gap-2 mb-2">
-        <Icon className="w-4 h-4 text-primary" />
-        <h4 className="text-sm font-semibold text-foreground">{title}</h4>
+    <div className="mt-5">
+      <div className="flex items-center gap-2 mb-2.5">
+        <Icon className={cn("w-4 h-4", colorClasses[color])} />
+        <h4 className="text-body font-semibold text-foreground">{title}</h4>
       </div>
       {chip ? (
         <div className="flex flex-wrap gap-2">
           {items.map((item, i) => (
-            <span key={i} className="px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-xs font-medium">
+            <span key={i} className="px-3 py-1.5 rounded-xl bg-secondary/80 text-secondary-foreground text-caption font-medium border border-border/50">
               {item}
             </span>
           ))}
         </div>
       ) : (
-        <ul className="space-y-1.5">
+        <ul className="space-y-2">
           {items.map((item, i) => (
-            <li key={i} className="text-sm text-secondary-foreground flex gap-2">
-              <span className="text-primary mt-0.5">•</span>
+            <li key={i} className="text-body text-secondary-foreground flex gap-2.5">
+              <span className={cn("mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0", `bg-${color === "primary" ? "primary" : color}`)} style={{ backgroundColor: `hsl(var(--${color}))` }} />
               {item}
             </li>
           ))}
