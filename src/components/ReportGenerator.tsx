@@ -46,69 +46,86 @@ export default function ReportGenerator() {
   };
 
   const downloadPdf = async () => {
-    const { default: jsPDF } = await import("jspdf");
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 20;
-    const maxWidth = pageWidth - margin * 2;
-    let y = 20;
+    try {
+      const { default: jsPDF } = await import("jspdf");
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 20;
+      const maxWidth = pageWidth - margin * 2;
+      let y = 20;
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(20);
-    doc.setTextColor(0, 150, 136);
-    doc.text("MarketMind Marketing Report", margin, y);
-    y += 12;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(20);
+      doc.setTextColor(0, 150, 136);
+      doc.text("MarketMind Marketing Report", margin, y);
+      y += 12;
 
-    doc.setDrawColor(0, 150, 136);
-    doc.setLineWidth(0.5);
-    doc.line(margin, y, pageWidth - margin, y);
-    y += 10;
+      doc.setDrawColor(0, 150, 136);
+      doc.setLineWidth(0.5);
+      doc.line(margin, y, pageWidth - margin, y);
+      y += 10;
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Business: ${business}  |  Audience: ${audience}  |  Goal: ${goal}`, margin, y);
-    y += 8;
-    doc.text(`Generated: ${new Date().toLocaleDateString()}`, margin, y);
-    y += 12;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Business: ${business}  |  Audience: ${audience}  |  Goal: ${goal}`, margin, y);
+      y += 8;
+      doc.text(`Generated: ${new Date().toLocaleDateString()}`, margin, y);
+      y += 12;
 
-    const lines = report.split("\n");
-    doc.setTextColor(30, 30, 30);
+      const lines = report.split("\n");
+      doc.setTextColor(30, 30, 30);
 
-    for (const line of lines) {
-      if (y > 270) { doc.addPage(); y = 20; }
-      if (line.startsWith("## ")) {
-        y += 4;
-        doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(0, 150, 136);
-        doc.text(line.replace("## ", ""), margin, y); y += 8; doc.setTextColor(30, 30, 30);
-      } else if (line.startsWith("### ")) {
-        y += 2;
-        doc.setFont("helvetica", "bold"); doc.setFontSize(11);
-        doc.text(line.replace("### ", ""), margin, y); y += 7;
-      } else if (line.startsWith("# ")) {
-        doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.setTextColor(0, 150, 136);
-        doc.text(line.replace("# ", ""), margin, y); y += 10; doc.setTextColor(30, 30, 30);
-      } else if (line.startsWith("- ") || line.startsWith("* ")) {
-        doc.setFont("helvetica", "normal"); doc.setFontSize(10);
-        const wrapped = doc.splitTextToSize(`• ${line.replace(/^[-*] /, "")}`, maxWidth - 5);
-        doc.text(wrapped, margin + 5, y); y += wrapped.length * 5;
-      } else if (line.match(/^\d+\. /)) {
-        doc.setFont("helvetica", "normal"); doc.setFontSize(10);
-        const wrapped = doc.splitTextToSize(line, maxWidth - 5);
-        doc.text(wrapped, margin + 5, y); y += wrapped.length * 5;
-      } else if (line.trim()) {
-        doc.setFont("helvetica", "normal"); doc.setFontSize(10);
-        const wrapped = doc.splitTextToSize(line.replace(/\*\*/g, "").replace(/\*/g, ""), maxWidth);
-        doc.text(wrapped, margin, y); y += wrapped.length * 5;
-      } else { y += 3; }
+      for (const line of lines) {
+        if (y > 270) { doc.addPage(); y = 20; }
+        if (line.startsWith("## ")) {
+          y += 4;
+          doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(0, 150, 136);
+          doc.text(line.replace("## ", ""), margin, y); y += 8; doc.setTextColor(30, 30, 30);
+        } else if (line.startsWith("### ")) {
+          y += 2;
+          doc.setFont("helvetica", "bold"); doc.setFontSize(11);
+          doc.text(line.replace("### ", ""), margin, y); y += 7;
+        } else if (line.startsWith("# ")) {
+          doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.setTextColor(0, 150, 136);
+          doc.text(line.replace("# ", ""), margin, y); y += 10; doc.setTextColor(30, 30, 30);
+        } else if (line.startsWith("- ") || line.startsWith("* ")) {
+          doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+          const wrapped = doc.splitTextToSize(`• ${line.replace(/^[-*] /, "")}`, maxWidth - 5);
+          doc.text(wrapped, margin + 5, y); y += wrapped.length * 5;
+        } else if (line.match(/^\d+\. /)) {
+          doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+          const wrapped = doc.splitTextToSize(line, maxWidth - 5);
+          doc.text(wrapped, margin + 5, y); y += wrapped.length * 5;
+        } else if (line.trim()) {
+          doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+          const wrapped = doc.splitTextToSize(line.replace(/\*\*/g, "").replace(/\*/g, ""), maxWidth);
+          doc.text(wrapped, margin, y); y += wrapped.length * 5;
+        } else { y += 3; }
+      }
+
+      const pageCount = doc.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150, 150, 150);
+        doc.text(`MarketMind Report  •  Page ${i} of ${pageCount}`, margin, 290);
+      }
+
+      // Use blob URL for reliable download in iframes/sandboxes
+      const blob = doc.output("blob");
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "MarketMind_Report.pdf";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+      toast({ title: "PDF Downloaded", description: "Your report has been saved." });
+    } catch (err) {
+      console.error("PDF download error:", err);
+      toast({ title: "Download failed", description: "Could not generate PDF. Please try again.", variant: "destructive" });
     }
-
-    const pageCount = doc.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150, 150, 150);
-      doc.text(`MarketMind Report  •  Page ${i} of ${pageCount}`, margin, 290);
-    }
-    doc.save("MarketMind_Report.pdf");
   };
 
   return (
