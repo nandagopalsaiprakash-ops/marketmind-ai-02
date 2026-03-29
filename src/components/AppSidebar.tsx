@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { MessageSquare, GraduationCap, Lightbulb, Wrench, Brain, ChevronRight, LogOut, Menu, X, PenTool, FileText, Sparkles } from "lucide-react";
+import { MessageSquare, GraduationCap, Lightbulb, Wrench, Brain, ChevronRight, LogOut, Menu, X, PenTool, FileText, Sparkles, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { motion, AnimatePresence } from "framer-motion";
 
-type Section = "chat" | "academy" | "strategy" | "tools" | "content" | "reports";
+type Section = "chat" | "academy" | "strategy" | "tools" | "content" | "reports" | "dashboard";
 
 interface AppSidebarProps {
   activeSection: Section;
@@ -15,6 +15,7 @@ interface AppSidebarProps {
 
 const navItems = [
   { id: "chat" as Section, label: "AI Assistant", icon: MessageSquare, badge: "Live" },
+  { id: "dashboard" as Section, label: "KPI Dashboard", icon: BarChart3, badge: "New" },
   { id: "academy" as Section, label: "Learning Academy", icon: GraduationCap },
   { id: "strategy" as Section, label: "Strategy Generator", icon: Lightbulb },
   { id: "content" as Section, label: "Content Generator", icon: PenTool },

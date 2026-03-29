@@ -6,15 +6,17 @@ import StrategyGenerator from "@/components/StrategyGenerator";
 import ToolsDashboard from "@/components/ToolsDashboard";
 import ContentGenerator from "@/components/ContentGenerator";
 import ReportGenerator from "@/components/ReportGenerator";
+import KpiDashboard from "@/components/KpiDashboard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "@/hooks/useTheme";
 import { Sun, Moon, Search, Zap } from "lucide-react";
 import VoiceInput from "@/components/VoiceInput";
 
-type Section = "chat" | "academy" | "strategy" | "tools" | "content" | "reports";
+type Section = "chat" | "academy" | "strategy" | "tools" | "content" | "reports" | "dashboard";
 
 const sectionTitles: Record<Section, string> = {
   chat: "AI Assistant",
+  dashboard: "KPI Dashboard",
   academy: "Learning Academy",
   strategy: "Strategy Generator",
   tools: "Marketing Tools",
@@ -87,6 +89,7 @@ const Index = () => {
               onNewMessage={handleNewMessage}
             />
           )}
+          {activeSection === "dashboard" && <KpiDashboard />}
           {activeSection === "academy" && <LearningAcademy />}
           {activeSection === "strategy" && <StrategyGenerator />}
           {activeSection === "content" && <ContentGenerator />}
