@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, GraduationCap, Lightbulb, Wrench, Brain, ChevronRight, LogOut, Menu, X, PenTool, FileText, Sparkles } from "lucide-react";
+import { MessageSquare, GraduationCap, Lightbulb, Wrench, Brain, ChevronRight, LogOut, Menu, X, PenTool, FileText, Sparkles, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
