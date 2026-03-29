@@ -6,6 +6,7 @@ import StrategyGenerator from "@/components/StrategyGenerator";
 import ToolsDashboard from "@/components/ToolsDashboard";
 import ContentGenerator from "@/components/ContentGenerator";
 import ReportGenerator from "@/components/ReportGenerator";
+import KpiDashboard from "@/components/KpiDashboard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "@/hooks/useTheme";
 import { Sun, Moon, Search, Zap } from "lucide-react";
