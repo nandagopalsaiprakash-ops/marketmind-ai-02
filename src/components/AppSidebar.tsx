@@ -15,6 +15,7 @@ interface AppSidebarProps {
 
 const navItems = [
   { id: "chat" as Section, label: "AI Assistant", icon: MessageSquare, badge: "Live" },
+  { id: "dashboard" as Section, label: "KPI Dashboard", icon: BarChart3, badge: "New" },
   { id: "academy" as Section, label: "Learning Academy", icon: GraduationCap },
   { id: "strategy" as Section, label: "Strategy Generator", icon: Lightbulb },
   { id: "content" as Section, label: "Content Generator", icon: PenTool },

@@ -89,6 +89,7 @@ const Index = () => {
               onNewMessage={handleNewMessage}
             />
           )}
+          {activeSection === "dashboard" && <KpiDashboard />}
           {activeSection === "academy" && <LearningAcademy />}
           {activeSection === "strategy" && <StrategyGenerator />}
           {activeSection === "content" && <ContentGenerator />}
