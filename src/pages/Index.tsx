@@ -12,7 +12,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { Sun, Moon, Search, Zap } from "lucide-react";
 import VoiceInput from "@/components/VoiceInput";
 
-type Section = "chat" | "academy" | "strategy" | "tools" | "content" | "reports";
+type Section = "chat" | "academy" | "strategy" | "tools" | "content" | "reports" | "dashboard";
 
 const sectionTitles: Record<Section, string> = {
   chat: "AI Assistant",
