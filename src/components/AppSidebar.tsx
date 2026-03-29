@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { motion, AnimatePresence } from "framer-motion";
 
-type Section = "chat" | "academy" | "strategy" | "tools" | "content" | "reports";
+type Section = "chat" | "academy" | "strategy" | "tools" | "content" | "reports" | "dashboard";
 
 interface AppSidebarProps {
   activeSection: Section;
