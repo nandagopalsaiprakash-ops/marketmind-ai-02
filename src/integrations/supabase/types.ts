@@ -73,6 +73,75 @@ export type Database = {
         }
         Relationships: []
       }
+      keyword_rankings: {
+        Row: {
+          created_at: string
+          id: string
+          keyword: string
+          position: number
+          previous_position: number | null
+          recorded_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          keyword: string
+          position: number
+          previous_position?: number | null
+          recorded_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          keyword?: string
+          position?: number
+          previous_position?: number | null
+          recorded_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      kpi_metrics: {
+        Row: {
+          bounce_rate: number
+          created_at: string
+          ctr: number
+          direct_traffic: number
+          id: string
+          impressions: number
+          metric_date: string
+          organic_traffic: number
+          paid_traffic: number
+          user_id: string
+        }
+        Insert: {
+          bounce_rate?: number
+          created_at?: string
+          ctr?: number
+          direct_traffic?: number
+          id?: string
+          impressions?: number
+          metric_date?: string
+          organic_traffic?: number
+          paid_traffic?: number
+          user_id: string
+        }
+        Update: {
+          bounce_rate?: number
+          created_at?: string
+          ctr?: number
+          direct_traffic?: number
+          id?: string
+          impressions?: number
+          metric_date?: string
+          organic_traffic?: number
+          paid_traffic?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       saved_strategies: {
         Row: {
           content: Json

@@ -1,66 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
-import { TrendingUp, TrendingDown, MousePointerClick, BarChart3, Globe, ArrowUpRight } from "lucide-react";
+import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
+import { TrendingUp, TrendingDown, MousePointerClick, BarChart3, Globe, ArrowUpRight, RefreshCw, Database } from "lucide-react";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/hooks/use-toast";
 
-const trafficData = [
-  { month: "Jan", organic: 4200, paid: 2400, direct: 1800 },
-  { month: "Feb", organic: 4800, paid: 2100, direct: 2000 },
-  { month: "Mar", organic: 5100, paid: 2800, direct: 1900 },
-  { month: "Apr", organic: 5600, paid: 3200, direct: 2200 },
-  { month: "May", organic: 6200, paid: 2900, direct: 2400 },
-  { month: "Jun", organic: 7100, paid: 3400, direct: 2600 },
-  { month: "Jul", organic: 7800, paid: 3100, direct: 2800 },
-];
+interface KpiMetric {
+  metric_date: string;
+  organic_traffic: number;
+  paid_traffic: number;
+  direct_traffic: number;
+  ctr: number;
+  impressions: number;
+  bounce_rate: number;
+}
 
-const ctrData = [
-  { week: "W1", ctr: 3.2, impressions: 12400 },
-  { week: "W2", ctr: 3.5, impressions: 13200 },
-  { week: "W3", ctr: 3.1, impressions: 11800 },
-  { week: "W4", ctr: 3.8, impressions: 14500 },
-  { week: "W5", ctr: 4.1, impressions: 15200 },
-  { week: "W6", ctr: 4.4, impressions: 16800 },
-  { week: "W7", ctr: 4.2, impressions: 15900 },
-  { week: "W8", ctr: 4.7, impressions: 17400 },
-];
-
-const rankingsData = [
-  { keyword: "digital marketing", position: 5, change: 2 },
-  { keyword: "SEO tools", position: 3, change: 4 },
-  { keyword: "content strategy", position: 8, change: -1 },
-  { keyword: "marketing automation", position: 12, change: 3 },
-  { keyword: "growth hacking", position: 6, change: 5 },
-  { keyword: "PPC management", position: 15, change: -2 },
-];
-
-const rankingsChartData = [
-  { month: "Jan", top3: 4, top10: 12, top20: 28 },
-  { month: "Feb", top3: 5, top10: 14, top20: 30 },
-  { month: "Mar", top3: 6, top10: 15, top20: 32 },
-  { month: "Apr", top3: 7, top10: 18, top20: 35 },
-  { month: "May", top3: 8, top10: 20, top20: 38 },
-  { month: "Jun", top3: 10, top10: 22, top20: 40 },
-  { month: "Jul", top3: 12, top10: 25, top20: 44 },
-];
-
-const kpis = [
-  { label: "Total Traffic", value: "24,300", change: "+12.5%", up: true, icon: Globe },
-  { label: "Avg. CTR", value: "4.7%", change: "+0.8%", up: true, icon: MousePointerClick },
-  { label: "Top 10 Keywords", value: "25", change: "+3", up: true, icon: BarChart3 },
-  { label: "Bounce Rate", value: "38.2%", change: "-4.1%", up: true, icon: ArrowUpRight },
-];
+interface KeywordRanking {
+  keyword: string;
+  position: number;
+  previous_position: number | null;
+}
 
 const trafficConfig = {
-  organic: { label: "Organic", color: "hsl(var(--primary))" },
-  paid: { label: "Paid", color: "hsl(var(--accent))" },
-  direct: { label: "Direct", color: "hsl(var(--muted-foreground))" },
+  organic_traffic: { label: "Organic", color: "hsl(var(--primary))" },
+  paid_traffic: { label: "Paid", color: "hsl(var(--accent))" },
+  direct_traffic: { label: "Direct", color: "hsl(var(--muted-foreground))" },
 };
 
 const ctrConfig = {
   ctr: { label: "CTR %", color: "hsl(var(--primary))" },
-  impressions: { label: "Impressions", color: "hsl(var(--accent))" },
 };
 
 const rankingsConfig = {
@@ -69,18 +41,174 @@ const rankingsConfig = {
   top20: { label: "Top 20", color: "hsl(var(--muted-foreground))" },
 };
 
+function generateSeedData() {
+  const months = ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07"];
+  return months.map((m, i) => ({
+    metric_date: `${m}-15`,
+    organic_traffic: 4200 + i * 600 + Math.floor(Math.random() * 400),
+    paid_traffic: 2400 + Math.floor(Math.random() * 800),
+    direct_traffic: 1800 + i * 150 + Math.floor(Math.random() * 300),
+    ctr: +(3.2 + i * 0.22 + Math.random() * 0.3).toFixed(2),
+    impressions: 12000 + i * 800 + Math.floor(Math.random() * 1000),
+    bounce_rate: +(42 - i * 0.6 - Math.random() * 2).toFixed(2),
+  }));
+}
+
+const seedKeywords = [
+  { keyword: "digital marketing", position: 5, previous_position: 7 },
+  { keyword: "SEO tools", position: 3, previous_position: 7 },
+  { keyword: "content strategy", position: 8, previous_position: 7 },
+  { keyword: "marketing automation", position: 12, previous_position: 15 },
+  { keyword: "growth hacking", position: 6, previous_position: 11 },
+  { keyword: "PPC management", position: 15, previous_position: 13 },
+];
+
+const monthLabel = (d: string) => {
+  const date = new Date(d);
+  return date.toLocaleString("default", { month: "short" });
+};
+
 const KpiDashboard = () => {
+  const { user } = useAuth();
+  const [metrics, setMetrics] = useState<KpiMetric[]>([]);
+  const [keywords, setKeywords] = useState<KeywordRanking[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = async () => {
+    if (!user) return;
+    setLoading(true);
+
+    const [metricsRes, keywordsRes] = await Promise.all([
+      supabase
+        .from("kpi_metrics")
+        .select("metric_date, organic_traffic, paid_traffic, direct_traffic, ctr, impressions, bounce_rate")
+        .eq("user_id", user.id)
+        .order("metric_date", { ascending: true }),
+      supabase
+        .from("keyword_rankings")
+        .select("keyword, position, previous_position")
+        .eq("user_id", user.id)
+        .order("position", { ascending: true }),
+    ]);
+
+    if (metricsRes.data && metricsRes.data.length > 0) {
+      setMetrics(metricsRes.data);
+    }
+    if (keywordsRes.data && keywordsRes.data.length > 0) {
+      setKeywords(keywordsRes.data);
+    }
+
+    // If no data exists, seed it
+    if ((!metricsRes.data || metricsRes.data.length === 0) && (!keywordsRes.data || keywordsRes.data.length === 0)) {
+      await seedDatabase();
+    }
+
+    setLoading(false);
+  };
+
+  const seedDatabase = async () => {
+    if (!user) return;
+    const metricsData = generateSeedData().map((m) => ({ ...m, user_id: user.id }));
+    const keywordsData = seedKeywords.map((k) => ({
+      ...k,
+      user_id: user.id,
+      recorded_at: new Date().toISOString().split("T")[0],
+    }));
+
+    const [mRes, kRes] = await Promise.all([
+      supabase.from("kpi_metrics").insert(metricsData),
+      supabase.from("keyword_rankings").insert(keywordsData),
+    ]);
+
+    if (mRes.error || kRes.error) {
+      toast({ title: "Error seeding data", description: mRes.error?.message || kRes.error?.message, variant: "destructive" });
+      return;
+    }
+
+    toast({ title: "Dashboard initialized", description: "Sample analytics data has been loaded." });
+    await fetchData();
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [user]);
+
+  const latest = metrics[metrics.length - 1];
+  const prev = metrics[metrics.length - 2];
+
+  const totalTraffic = latest ? latest.organic_traffic + latest.paid_traffic + latest.direct_traffic : 0;
+  const prevTotal = prev ? prev.organic_traffic + prev.paid_traffic + prev.direct_traffic : 0;
+  const trafficChange = prevTotal ? (((totalTraffic - prevTotal) / prevTotal) * 100).toFixed(1) : "0";
+
+  const top10Count = keywords.filter((k) => k.position <= 10).length;
+  const ctrChange = latest && prev ? (latest.ctr - prev.ctr).toFixed(1) : "0";
+  const bounceChange = latest && prev ? (latest.bounce_rate - prev.bounce_rate).toFixed(1) : "0";
+
+  const kpis = [
+    { label: "Total Traffic", value: totalTraffic.toLocaleString(), change: `${+trafficChange >= 0 ? "+" : ""}${trafficChange}%`, up: +trafficChange >= 0, icon: Globe },
+    { label: "Avg. CTR", value: latest ? `${latest.ctr}%` : "—", change: `${+ctrChange >= 0 ? "+" : ""}${ctrChange}%`, up: +ctrChange >= 0, icon: MousePointerClick },
+    { label: "Top 10 Keywords", value: String(top10Count), change: `${top10Count}`, up: true, icon: BarChart3 },
+    { label: "Bounce Rate", value: latest ? `${latest.bounce_rate}%` : "—", change: `${+bounceChange <= 0 ? "" : "+"}${bounceChange}%`, up: +bounceChange <= 0, icon: ArrowUpRight },
+  ];
+
+  const trafficChartData = metrics.map((m) => ({
+    month: monthLabel(m.metric_date),
+    organic_traffic: m.organic_traffic,
+    paid_traffic: m.paid_traffic,
+    direct_traffic: m.direct_traffic,
+  }));
+
+  const ctrChartData = metrics.map((m, i) => ({
+    week: monthLabel(m.metric_date),
+    ctr: m.ctr,
+  }));
+
+  // Derive rankings bracket data from keyword counts per month (simplified)
+  const rankingsChartData = metrics.map((m) => {
+    const t3 = keywords.filter((k) => k.position <= 3).length;
+    const t10 = keywords.filter((k) => k.position <= 10).length;
+    const t20 = keywords.filter((k) => k.position <= 20).length;
+    return { month: monthLabel(m.metric_date), top3: t3, top10: t10, top20: t20 };
+  });
+
+  if (loading) {
+    return (
+      <div className="h-full overflow-y-auto p-4 md:p-6 space-y-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-24 rounded-xl" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-72 rounded-xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full overflow-y-auto p-4 md:p-6 space-y-6">
+      {/* Header with refresh */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-h2 font-bold text-foreground">Analytics Overview</h2>
+          <p className="text-caption text-muted-foreground">Real-time marketing performance metrics</p>
+        </div>
+        <button
+          onClick={fetchData}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-caption font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all"
+        >
+          <RefreshCw className="w-3.5 h-3.5" />
+          Refresh
+        </button>
+      </div>
+
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {kpis.map((kpi, i) => (
-          <motion.div
-            key={kpi.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-          >
+          <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
             <Card className="glass-card border-border/30 hover:border-primary/30 transition-all">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
@@ -109,7 +237,7 @@ const KpiDashboard = () => {
             </CardHeader>
             <CardContent>
               <ChartContainer config={trafficConfig} className="h-[240px] w-full">
-                <AreaChart data={trafficData}>
+                <AreaChart data={trafficChartData}>
                   <defs>
                     <linearGradient id="fillOrganic" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
@@ -120,9 +248,9 @@ const KpiDashboard = () => {
                   <XAxis dataKey="month" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Area type="monotone" dataKey="organic" stroke="hsl(var(--primary))" fill="url(#fillOrganic)" strokeWidth={2} />
-                  <Area type="monotone" dataKey="paid" stroke="hsl(var(--accent))" fill="transparent" strokeWidth={2} strokeDasharray="4 4" />
-                  <Area type="monotone" dataKey="direct" stroke="hsl(var(--muted-foreground))" fill="transparent" strokeWidth={1.5} />
+                  <Area type="monotone" dataKey="organic_traffic" stroke="hsl(var(--primary))" fill="url(#fillOrganic)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="paid_traffic" stroke="hsl(var(--accent))" fill="transparent" strokeWidth={2} strokeDasharray="4 4" />
+                  <Area type="monotone" dataKey="direct_traffic" stroke="hsl(var(--muted-foreground))" fill="transparent" strokeWidth={1.5} />
                 </AreaChart>
               </ChartContainer>
             </CardContent>
@@ -134,11 +262,11 @@ const KpiDashboard = () => {
           <Card className="glass-card border-border/30">
             <CardHeader className="pb-2">
               <CardTitle className="text-body-lg font-semibold text-foreground">Click-Through Rate</CardTitle>
-              <p className="text-caption text-muted-foreground">Weekly CTR performance</p>
+              <p className="text-caption text-muted-foreground">Monthly CTR performance</p>
             </CardHeader>
             <CardContent>
               <ChartContainer config={ctrConfig} className="h-[240px] w-full">
-                <LineChart data={ctrData}>
+                <LineChart data={ctrChartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.3} />
                   <XAxis dataKey="week" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
@@ -182,18 +310,24 @@ const KpiDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {rankingsData.map((item, i) => (
-                  <div key={item.keyword} className="flex items-center justify-between p-2.5 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <span className="text-caption font-mono text-muted-foreground w-5">#{item.position}</span>
-                      <span className="text-body text-foreground">{item.keyword}</span>
+                {keywords.map((item) => {
+                  const change = item.previous_position ? item.previous_position - item.position : 0;
+                  return (
+                    <div key={item.keyword} className="flex items-center justify-between p-2.5 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <span className="text-caption font-mono text-muted-foreground w-5">#{item.position}</span>
+                        <span className="text-body text-foreground">{item.keyword}</span>
+                      </div>
+                      <span className={`text-caption font-medium flex items-center gap-1 ${change >= 0 ? "text-green-400" : "text-red-400"}`}>
+                        {change >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                        {change >= 0 ? "+" : ""}{change}
+                      </span>
                     </div>
-                    <span className={`text-caption font-medium flex items-center gap-1 ${item.change > 0 ? "text-green-400" : "text-red-400"}`}>
-                      {item.change > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                      {item.change > 0 ? "+" : ""}{item.change}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
+                {keywords.length === 0 && (
+                  <p className="text-caption text-muted-foreground text-center py-4">No keyword data yet</p>
+                )}
               </div>
             </CardContent>
           </Card>
