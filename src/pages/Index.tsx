@@ -16,6 +16,7 @@ type Section = "chat" | "academy" | "strategy" | "tools" | "content" | "reports"
 
 const sectionTitles: Record<Section, string> = {
   chat: "AI Assistant",
+  dashboard: "KPI Dashboard",
   academy: "Learning Academy",
   strategy: "Strategy Generator",
   tools: "Marketing Tools",
