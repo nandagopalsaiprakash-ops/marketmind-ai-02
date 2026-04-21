@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FileText, Download, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import jsPDF from "jspdf";
 import ReactMarkdown from "react-markdown";
 
 const REPORT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-report`;
@@ -45,9 +46,8 @@ export default function ReportGenerator() {
     }
   };
 
-  const downloadPdf = async () => {
+  const downloadPdf = () => {
     try {
-      const { default: jsPDF } = await import("jspdf");
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
       const margin = 20;
@@ -116,12 +116,14 @@ export default function ReportGenerator() {
       const link = document.createElement("a");
       link.href = url;
       link.download = "MarketMind_Report.pdf";
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-      toast({ title: "PDF Downloaded", description: "Your report has been saved." });
+      toast({ title: "PDF Ready", description: "If preview blocks downloads, the PDF will open in a new tab." });
     } catch (err) {
       console.error("PDF download error:", err);
       toast({ title: "Download failed", description: "Could not generate PDF. Please try again.", variant: "destructive" });
