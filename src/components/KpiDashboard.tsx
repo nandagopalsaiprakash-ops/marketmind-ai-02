@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
+import GscConnect from "./GscConnect";
 
 interface KpiMetric {
   metric_date: string;
@@ -203,6 +204,15 @@ const KpiDashboard = () => {
           <RefreshCw className="w-3.5 h-3.5" />
           Refresh
         </button>
+      </div>
+
+      {/* Real-data Google Search Console section */}
+      <GscConnect />
+
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1 bg-border/40" />
+        <span className="text-micro text-muted-foreground uppercase tracking-wider">Demo data</span>
+        <div className="h-px flex-1 bg-border/40" />
       </div>
 
       {/* KPI Cards */}
