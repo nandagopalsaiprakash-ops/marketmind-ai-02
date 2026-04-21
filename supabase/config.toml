@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.generate-report]
 verify_jwt = false
+
+[functions.gsc-oauth-callback]
+verify_jwt = false
+
+[functions.gsc-recommendations]
+verify_jwt = false
