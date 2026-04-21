@@ -110,20 +110,11 @@ export default function ReportGenerator() {
         doc.text(`MarketMind Report  •  Page ${i} of ${pageCount}`, margin, 290);
       }
 
-      // Use blob URL for reliable download in iframes/sandboxes
-      const blob = doc.output("blob");
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "MarketMind_Report.pdf";
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-
-      toast({ title: "PDF Ready", description: "If preview blocks downloads, the PDF will open in a new tab." });
+      // Save directly to the user's system using jsPDF's native save (uses
+      // FileSaver under the hood and respects the browser's download dialog)
+      const filename = `MarketMind_Report_${new Date().toISOString().split("T")[0]}.pdf`;
+      doc.save(filename);
+      toast({ title: "PDF Saved", description: `${filename} downloaded to your device.` });
     } catch (err) {
       console.error("PDF download error:", err);
       toast({ title: "Download failed", description: "Could not generate PDF. Please try again.", variant: "destructive" });
