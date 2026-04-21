@@ -26,19 +26,19 @@ interface KeywordRanking {
 }
 
 const trafficConfig = {
-  organic_traffic: { label: "Organic", color: "hsl(var(--primary))" },
-  paid_traffic: { label: "Paid", color: "hsl(var(--accent))" },
-  direct_traffic: { label: "Direct", color: "hsl(var(--muted-foreground))" },
+  organic_traffic: { label: "From Search (Free)", color: "hsl(var(--primary))" },
+  paid_traffic: { label: "From Ads (Paid)", color: "hsl(var(--accent))" },
+  direct_traffic: { label: "Direct Visits", color: "hsl(var(--muted-foreground))" },
 };
 
 const ctrConfig = {
-  ctr: { label: "CTR %", color: "hsl(var(--primary))" },
+  ctr: { label: "Click Rate %", color: "hsl(var(--primary))" },
 };
 
 const rankingsConfig = {
-  top3: { label: "Top 3", color: "hsl(142 71% 45%)" },
-  top10: { label: "Top 10", color: "hsl(var(--primary))" },
-  top20: { label: "Top 20", color: "hsl(var(--muted-foreground))" },
+  top3: { label: "Page 1 (Top 3)", color: "hsl(142 71% 45%)" },
+  top10: { label: "Page 1 (Top 10)", color: "hsl(var(--primary))" },
+  top20: { label: "Page 2 (Top 20)", color: "hsl(var(--muted-foreground))" },
 };
 
 function generateSeedData() {
@@ -145,10 +145,10 @@ const KpiDashboard = () => {
   const bounceChange = latest && prev ? (latest.bounce_rate - prev.bounce_rate).toFixed(1) : "0";
 
   const kpis = [
-    { label: "Total Traffic", value: totalTraffic.toLocaleString(), change: `${+trafficChange >= 0 ? "+" : ""}${trafficChange}%`, up: +trafficChange >= 0, icon: Globe },
-    { label: "Avg. CTR", value: latest ? `${latest.ctr}%` : "—", change: `${+ctrChange >= 0 ? "+" : ""}${ctrChange}%`, up: +ctrChange >= 0, icon: MousePointerClick },
-    { label: "Top 10 Keywords", value: String(top10Count), change: `${top10Count}`, up: true, icon: BarChart3 },
-    { label: "Bounce Rate", value: latest ? `${latest.bounce_rate}%` : "—", change: `${+bounceChange <= 0 ? "" : "+"}${bounceChange}%`, up: +bounceChange <= 0, icon: ArrowUpRight },
+    { label: "Total Visitors", value: totalTraffic.toLocaleString(), change: `${+trafficChange >= 0 ? "+" : ""}${trafficChange}%`, up: +trafficChange >= 0, icon: Globe },
+    { label: "Click Rate", value: latest ? `${latest.ctr}%` : "—", change: `${+ctrChange >= 0 ? "+" : ""}${ctrChange}%`, up: +ctrChange >= 0, icon: MousePointerClick },
+    { label: "Keywords on Page 1", value: String(top10Count), change: `${top10Count} ranking`, up: true, icon: BarChart3 },
+    { label: "Quick Exits", value: latest ? `${latest.bounce_rate}%` : "—", change: `${+bounceChange <= 0 ? "" : "+"}${bounceChange}%`, up: +bounceChange <= 0, icon: ArrowUpRight },
   ];
 
   const trafficChartData = metrics.map((m) => ({
@@ -193,8 +193,8 @@ const KpiDashboard = () => {
       {/* Header with refresh */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-h2 font-bold text-foreground">Analytics Overview</h2>
-          <p className="text-caption text-muted-foreground">Real-time marketing performance metrics</p>
+          <h2 className="text-h2 font-bold text-foreground">Marketing Overview</h2>
+          <p className="text-caption text-muted-foreground">Easy-to-read snapshot of how your website is performing</p>
         </div>
         <button
           onClick={fetchData}
@@ -232,8 +232,8 @@ const KpiDashboard = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
           <Card className="glass-card border-border/30">
             <CardHeader className="pb-2">
-              <CardTitle className="text-body-lg font-semibold text-foreground">Website Traffic</CardTitle>
-              <p className="text-caption text-muted-foreground">Monthly visitors by source</p>
+              <CardTitle className="text-body-lg font-semibold text-foreground">Website Visitors</CardTitle>
+              <p className="text-caption text-muted-foreground">How many people came to your site each month, and from where</p>
             </CardHeader>
             <CardContent>
               <ChartContainer config={trafficConfig} className="h-[240px] w-full">
@@ -261,8 +261,8 @@ const KpiDashboard = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
           <Card className="glass-card border-border/30">
             <CardHeader className="pb-2">
-              <CardTitle className="text-body-lg font-semibold text-foreground">Click-Through Rate</CardTitle>
-              <p className="text-caption text-muted-foreground">Monthly CTR performance</p>
+              <CardTitle className="text-body-lg font-semibold text-foreground">Click Rate</CardTitle>
+              <p className="text-caption text-muted-foreground">Out of everyone who saw your site, how many clicked</p>
             </CardHeader>
             <CardContent>
               <ChartContainer config={ctrConfig} className="h-[240px] w-full">
@@ -282,8 +282,8 @@ const KpiDashboard = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
           <Card className="glass-card border-border/30">
             <CardHeader className="pb-2">
-              <CardTitle className="text-body-lg font-semibold text-foreground">Keyword Rankings</CardTitle>
-              <p className="text-caption text-muted-foreground">Keywords by position bracket</p>
+              <CardTitle className="text-body-lg font-semibold text-foreground">Search Position</CardTitle>
+              <p className="text-caption text-muted-foreground">Where your keywords appear on Google search results</p>
             </CardHeader>
             <CardContent>
               <ChartContainer config={rankingsConfig} className="h-[240px] w-full">
@@ -305,8 +305,8 @@ const KpiDashboard = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
           <Card className="glass-card border-border/30">
             <CardHeader className="pb-2">
-              <CardTitle className="text-body-lg font-semibold text-foreground">Top Keywords</CardTitle>
-              <p className="text-caption text-muted-foreground">Current positions & changes</p>
+              <CardTitle className="text-body-lg font-semibold text-foreground">Your Keywords</CardTitle>
+              <p className="text-caption text-muted-foreground">Words people search to find you (lower number = higher on Google)</p>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
