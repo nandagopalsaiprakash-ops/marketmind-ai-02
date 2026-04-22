@@ -50,10 +50,23 @@ serve(async (req) => {
     const action = body.action as "list_sites" | "select_site" | "fetch_metrics";
 
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-    const { data: conn } = await admin.from("gsc_connections").select("*").eq("user_id", userId).maybeSingle();
-    if (!conn) return new Response(JSON.stringify({ error: "not_connected" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const { data: conn, error: connErr } = await admin.from("gsc_connections").select("*").eq("user_id", userId).maybeSingle();
+    if (connErr) {
+      console.error(JSON.stringify({ level: "error", scope: "gsc-data", code: "db_error", user_id: userId, message: connErr.message }));
+      return new Response(JSON.stringify({ status: "error", code: "db_error", message: "Could not load connection." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    if (!conn) {
+      console.log(JSON.stringify({ level: "info", scope: "gsc-data", code: "not_connected", user_id: userId }));
+      return new Response(JSON.stringify({ status: "not_connected", code: "not_connected", message: "Google Search Console is not connected." }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
-    const accessToken = await refreshIfNeeded(admin, conn);
+    let accessToken: string;
+    try {
+      accessToken = await refreshIfNeeded(admin, conn);
+    } catch (e) {
+      console.error(JSON.stringify({ level: "error", scope: "gsc-data", code: "token_refresh_failed", user_id: userId, message: e instanceof Error ? e.message : String(e) }));
+      return new Response(JSON.stringify({ status: "error", code: "token_refresh_failed", message: "Google session expired. Please reconnect." }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     if (action === "list_sites") {
       const r = await fetch("https://searchconsole.googleapis.com/webmasters/v3/sites", {
