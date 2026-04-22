@@ -84,7 +84,7 @@ export default function GscConnect() {
     if (error && (error as any).context) {
       try { payload = await (error as any).context.json(); } catch { /* ignore */ }
     }
-    if (payload?.error === "not_connected") return null;
+    if (payload?.status === "not_connected" || payload?.error === "not_connected") return null;
     return payload?.sites || [];
   };
 
@@ -119,8 +119,9 @@ export default function GscConnect() {
   const loadMetrics = async (_site: string) => {
     setPhase("loading_data");
     const { data, error } = await supabase.functions.invoke("gsc-data", { body: { action: "fetch_metrics" } });
-    if (error || data?.error) {
-      toast({ title: "Could not load data", description: data?.error || error?.message, variant: "destructive" });
+    if (error || (data?.status && data.status !== "ok") || data?.error) {
+      const msg = data?.message || data?.error || error?.message || "Unknown error";
+      toast({ title: "Could not load data", description: msg, variant: "destructive" });
       setPhase("no_match");
       return;
     }

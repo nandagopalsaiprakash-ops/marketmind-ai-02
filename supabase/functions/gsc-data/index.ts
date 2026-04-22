@@ -50,29 +50,49 @@ serve(async (req) => {
     const action = body.action as "list_sites" | "select_site" | "fetch_metrics";
 
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-    const { data: conn } = await admin.from("gsc_connections").select("*").eq("user_id", userId).maybeSingle();
-    if (!conn) return new Response(JSON.stringify({ error: "not_connected" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const { data: conn, error: connErr } = await admin.from("gsc_connections").select("*").eq("user_id", userId).maybeSingle();
+    if (connErr) {
+      console.error(JSON.stringify({ level: "error", scope: "gsc-data", code: "db_error", user_id: userId, message: connErr.message }));
+      return new Response(JSON.stringify({ status: "error", code: "db_error", message: "Could not load connection." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    if (!conn) {
+      console.log(JSON.stringify({ level: "info", scope: "gsc-data", code: "not_connected", user_id: userId }));
+      return new Response(JSON.stringify({ status: "not_connected", code: "not_connected", message: "Google Search Console is not connected." }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
-    const accessToken = await refreshIfNeeded(admin, conn);
+    let accessToken: string;
+    try {
+      accessToken = await refreshIfNeeded(admin, conn);
+    } catch (e) {
+      console.error(JSON.stringify({ level: "error", scope: "gsc-data", code: "token_refresh_failed", user_id: userId, message: e instanceof Error ? e.message : String(e) }));
+      return new Response(JSON.stringify({ status: "error", code: "token_refresh_failed", message: "Google session expired. Please reconnect." }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     if (action === "list_sites") {
       const r = await fetch("https://searchconsole.googleapis.com/webmasters/v3/sites", {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       const j = await r.json();
+      if (!r.ok) {
+        console.error(JSON.stringify({ level: "error", scope: "gsc-data", code: "gsc_api_error", action: "list_sites", user_id: userId, http_status: r.status, body: j }));
+        return new Response(JSON.stringify({ status: "error", code: "gsc_api_error", message: j?.error?.message || "Search Console API error." }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
       const sites = (j.siteEntry || []).map((s: any) => ({ url: s.siteUrl, permission: s.permissionLevel }));
-      return new Response(JSON.stringify({ sites, selected: conn.selected_site }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ status: "ok", sites, selected: conn.selected_site }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     if (action === "select_site") {
       const site = String(body.site || "");
       await admin.from("gsc_connections").update({ selected_site: site, updated_at: new Date().toISOString() }).eq("user_id", userId);
-      return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ status: "ok" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     if (action === "fetch_metrics") {
       const site = conn.selected_site;
-      if (!site) return new Response(JSON.stringify({ error: "no_site_selected" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (!site) {
+        console.log(JSON.stringify({ level: "info", scope: "gsc-data", code: "no_site_selected", user_id: userId }));
+        return new Response(JSON.stringify({ status: "no_site_selected", code: "no_site_selected", message: "No site selected." }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
       const end = new Date();
       const start = new Date(Date.now() - 28 * 24 * 60 * 60 * 1000);
       const fmt = (d: Date) => d.toISOString().split("T")[0];
@@ -80,13 +100,19 @@ serve(async (req) => {
       const queryUrl = `https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(site)}/searchAnalytics/query`;
       const headers = { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" };
 
-      // Run three queries in parallel: by date, by query, totals
       const [byDateR, byQueryR, byPageR] = await Promise.all([
         fetch(queryUrl, { method: "POST", headers, body: JSON.stringify({ startDate: fmt(start), endDate: fmt(end), dimensions: ["date"], rowLimit: 1000 }) }),
         fetch(queryUrl, { method: "POST", headers, body: JSON.stringify({ startDate: fmt(start), endDate: fmt(end), dimensions: ["query"], rowLimit: 25 }) }),
         fetch(queryUrl, { method: "POST", headers, body: JSON.stringify({ startDate: fmt(start), endDate: fmt(end), dimensions: ["page"], rowLimit: 10 }) }),
       ]);
       const [byDate, byQuery, byPage] = await Promise.all([byDateR.json(), byQueryR.json(), byPageR.json()]);
+
+      const failed = [byDateR, byQueryR, byPageR].find((r) => !r.ok);
+      if (failed) {
+        console.error(JSON.stringify({ level: "error", scope: "gsc-data", code: "gsc_api_error", action: "fetch_metrics", user_id: userId, site, http_status: failed.status, body: { byDate, byQuery, byPage } }));
+        const msg = (byDate?.error || byQuery?.error || byPage?.error)?.message || "Search Console API error.";
+        return new Response(JSON.stringify({ status: "error", code: "gsc_api_error", message: msg }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
 
       const series = (byDate.rows || []).map((r: any) => ({
         date: r.keys[0],
@@ -122,12 +148,13 @@ serve(async (req) => {
         site,
       };
 
-      return new Response(JSON.stringify({ summary, series, keywords, pages }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      console.log(JSON.stringify({ level: "info", scope: "gsc-data", code: "ok", action: "fetch_metrics", user_id: userId, site, rows: series.length }));
+      return new Response(JSON.stringify({ status: "ok", summary, series, keywords, pages }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    return new Response(JSON.stringify({ error: "unknown_action" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ status: "error", code: "unknown_action", message: "Unknown action." }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
-    console.error("gsc-data err", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    console.error(JSON.stringify({ level: "error", scope: "gsc-data", code: "unhandled", message: e instanceof Error ? e.message : String(e), stack: e instanceof Error ? e.stack : undefined }));
+    return new Response(JSON.stringify({ status: "error", code: "unhandled", message: e instanceof Error ? e.message : "Unknown error." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
