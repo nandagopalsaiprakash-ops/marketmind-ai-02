@@ -51,7 +51,7 @@ serve(async (req) => {
 
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const { data: conn } = await admin.from("gsc_connections").select("*").eq("user_id", userId).maybeSingle();
-    if (!conn) return new Response(JSON.stringify({ error: "not_connected" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!conn) return new Response(JSON.stringify({ error: "not_connected" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     const accessToken = await refreshIfNeeded(admin, conn);
 
