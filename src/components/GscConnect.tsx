@@ -84,7 +84,7 @@ export default function GscConnect() {
     if (error && (error as any).context) {
       try { payload = await (error as any).context.json(); } catch { /* ignore */ }
     }
-    if (payload?.error === "not_connected") return null;
+    if (payload?.status === "not_connected" || payload?.error === "not_connected") return null;
     return payload?.sites || [];
   };
 
