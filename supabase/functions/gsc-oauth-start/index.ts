@@ -17,11 +17,11 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader } } });
-    const { data, error } = await supabase.auth.getClaims(authHeader.replace("Bearer ", ""));
-    if (error || !data?.claims) {
+    const { data, error } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
+    if (error || !data?.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    const userId = data.claims.sub as string;
+    const userId = data.user.id;
 
     const clientId = Deno.env.get("GOOGLE_OAUTH_CLIENT_ID");
     if (!clientId) throw new Error("GOOGLE_OAUTH_CLIENT_ID not configured");
