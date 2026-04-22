@@ -56,16 +56,23 @@ export default function GscConnect() {
   const loadSites = async () => {
     setStatus("checking");
     const { data, error } = await supabase.functions.invoke("gsc-data", { body: { action: "list_sites" } });
-    if (error || data?.error === "not_connected") {
+
+    // Read body even on non-2xx responses (FunctionsHttpError)
+    let payload: any = data;
+    if (error && (error as any).context) {
+      try { payload = await (error as any).context.json(); } catch { /* ignore */ }
+    }
+
+    if (payload?.error === "not_connected" || (error && !payload?.sites)) {
       setStatus("disconnected");
       return;
     }
-    if (data?.sites) {
-      setSites(data.sites);
-      if (data.selected) {
-        setSelectedSite(data.selected);
+    if (payload?.sites) {
+      setSites(payload.sites);
+      if (payload.selected) {
+        setSelectedSite(payload.selected);
         setStatus("connected");
-        await loadMetrics(data.selected);
+        await loadMetrics(payload.selected);
       } else {
         setStatus("no_site");
       }
