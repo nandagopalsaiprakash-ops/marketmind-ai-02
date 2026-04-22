@@ -119,8 +119,9 @@ export default function GscConnect() {
   const loadMetrics = async (_site: string) => {
     setPhase("loading_data");
     const { data, error } = await supabase.functions.invoke("gsc-data", { body: { action: "fetch_metrics" } });
-    if (error || data?.error) {
-      toast({ title: "Could not load data", description: data?.error || error?.message, variant: "destructive" });
+    if (error || (data?.status && data.status !== "ok") || data?.error) {
+      const msg = data?.message || data?.error || error?.message || "Unknown error";
+      toast({ title: "Could not load data", description: msg, variant: "destructive" });
       setPhase("no_match");
       return;
     }
