@@ -233,7 +233,7 @@ export default function GscConnect() {
             <Search className="w-4 h-4 text-primary" />
             <h3 className="font-display font-semibold text-body-lg text-foreground">Analyze any website</h3>
           </div>
-          <p className="text-caption text-muted-foreground mb-3">Paste your website URL to see real visitor data, top keywords and an AI improvement plan.</p>
+          <p className="text-caption text-muted-foreground mb-3">Paste your website URL to instantly see traffic estimates, top keywords and an AI improvement plan — no setup required.</p>
           <form
             onSubmit={(e) => { e.preventDefault(); analyzeUrl(); }}
             className="flex flex-col sm:flex-row gap-2"
