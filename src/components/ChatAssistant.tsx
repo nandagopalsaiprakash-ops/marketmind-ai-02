@@ -184,12 +184,14 @@ export default function ChatAssistant({ technicalMode, onTechnicalModeChange, on
       {/* Header */}
       <div className="border-b border-border/50 p-3 md:p-4 flex items-center justify-between gap-2 gradient-glass">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-xl gradient-primary flex items-center justify-center shadow-glow flex-shrink-0">
+          <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center shadow-glow flex-shrink-0 hover:animate-wiggle">
             <Sparkles className="w-4 h-4 text-primary-foreground" />
           </div>
           <div className="min-w-0">
-            <h2 className="font-display font-bold text-body text-foreground">AI Marketing Assistant</h2>
-            <p className="text-micro text-muted-foreground">Powered by Lovable AI</p>
+            <h2 className="font-display font-bold text-body text-foreground flex items-center gap-1.5">
+              MarketMind <span className="text-xs">✨</span>
+            </h2>
+            <p className="text-micro text-muted-foreground">Your friendly marketing buddy</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0">
