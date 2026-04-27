@@ -221,12 +221,44 @@ export default function GscConnect() {
 
   const kpis = summary
     ? [
-        { label: "Visitors from Google", value: summary.clicks.toLocaleString(), icon: Globe },
-        { label: "Times you appeared", value: summary.impressions.toLocaleString(), icon: BarChart3 },
-        { label: "Click rate", value: `${summary.avg_ctr}%`, icon: MousePointerClick },
-        { label: "Avg. Google rank", value: `#${summary.avg_position}`, icon: TrendingUp },
+        {
+          label: "Visitors from Google",
+          value: summary.clicks.toLocaleString(),
+          icon: Globe,
+          hint: "People who clicked your site from Google search in the last 28 days.",
+          good: summary.clicks > 100 ? "Nice traffic 👍" : "Room to grow 🌱",
+        },
+        {
+          label: "Times you appeared",
+          value: summary.impressions.toLocaleString(),
+          icon: BarChart3,
+          hint: "How often your site showed up in Google search results.",
+          good: "More = more chances to be seen",
+        },
+        {
+          label: "Click rate",
+          value: `${summary.avg_ctr}%`,
+          icon: MousePointerClick,
+          hint: "Out of everyone who saw you, how many clicked.",
+          good: summary.avg_ctr >= 3 ? "Healthy ✨" : "Aim for 3%+",
+        },
+        {
+          label: "Avg. Google rank",
+          value: `#${summary.avg_position}`,
+          icon: TrendingUp,
+          hint: "Your average position on Google. Lower is better.",
+          good: summary.avg_position <= 10 ? "Page 1! 🎉" : "Aim for top 10",
+        },
       ]
     : [];
+
+  // Auto-generate the AI plan when data is ready (no extra clicks for beginners)
+  useEffect(() => {
+    if (phase === "ready" && summary && !recs && !loadingRecs) {
+      generateRecs();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, summary]);
 
   return (
     <div className="space-y-6">
@@ -280,22 +312,18 @@ export default function GscConnect() {
         </CardContent>
       </Card>
 
-      {/* Demo data disclaimer */}
+      {/* Demo data — soft inline note (no big pull-away CTA) */}
       {phase === "ready" && isDemo && (
-        <Card className="glass-card border-orange-500/30">
-          <CardContent className="p-4 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h4 className="font-display font-semibold text-body text-foreground">These numbers are estimates, not real traffic</h4>
-              <p className="text-caption text-muted-foreground mt-1">
-                We're showing illustrative sample data based on your URL so you can preview the dashboard. Connect Google Search Console to see your site's actual clicks, impressions, keywords and rankings.
-              </p>
-              <button onClick={connect} className="mt-3 gradient-primary text-primary-foreground px-4 py-2 rounded-xl text-body font-medium shadow-glow inline-flex items-center gap-2">
-                <Globe className="w-4 h-4" /> Connect Google Search Console
-              </button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-start gap-2 px-3 py-2 rounded-xl bg-orange-500/10 border border-orange-500/20 text-caption text-muted-foreground">
+          <AlertCircle className="w-3.5 h-3.5 text-orange-400 flex-shrink-0 mt-0.5" />
+          <span>
+            These are <span className="text-orange-400 font-medium">friendly estimates</span> so you can explore right away.
+            Want your real numbers later?{" "}
+            <button onClick={connect} className="text-primary hover:underline font-medium">
+              Connect Google (optional)
+            </button>
+          </span>
+        </div>
       )}
 
       {/* States */}
@@ -352,14 +380,32 @@ export default function GscConnect() {
       {/* Connected dashboard */}
       {phase === "ready" && summary && (
         <>
+          {/* Beginner-friendly tip */}
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
+            <Sparkles className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-body text-foreground font-medium">New here? Read it like this 👇</p>
+              <p className="text-caption text-muted-foreground mt-0.5">
+                Each card below is one simple number about your website. Hover any card for a plain-English explanation.
+                Scroll down for an AI plan with easy actions you can do today — no marketing degree needed.
+              </p>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             {kpis.map((kpi, i) => (
               <motion.div key={kpi.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                <Card className="glass-card border-border/30">
+                <Card className="glass-card border-border/30 hover:border-primary/40 transition-all" title={kpi.hint}>
                   <CardContent className="p-4">
-                    <kpi.icon className="w-4 h-4 text-muted-foreground mb-2" />
+                    <div className="flex items-center justify-between mb-2">
+                      <kpi.icon className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-micro px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium whitespace-nowrap">
+                        {kpi.good}
+                      </span>
+                    </div>
                     <p className="text-h3 font-bold text-foreground">{kpi.value}</p>
                     <p className="text-micro text-muted-foreground mt-1">{kpi.label}</p>
+                    <p className="text-micro text-muted-foreground/80 mt-2 leading-snug">{kpi.hint}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -482,7 +528,10 @@ export default function GscConnect() {
                   </motion.div>
                 )}
                 {!recs && !loadingRecs && (
-                  <p className="text-caption text-muted-foreground py-4">Click "Generate plan" to get personalized marketing recommendations based on your site's real Google data.</p>
+                  <div className="flex items-center gap-2 py-4 text-caption text-muted-foreground">
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-primary" />
+                    Cooking up your beginner-friendly plan…
+                  </div>
                 )}
               </AnimatePresence>
             </CardContent>
