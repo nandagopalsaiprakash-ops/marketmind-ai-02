@@ -72,9 +72,16 @@ export const playTechnicalOn = () => {
   tone(1320, 0.12, "square", 0.55, 0.22);
 };
 
-// ✨ Beginner mode — soft chime descending
+// ✨ Beginner mode — playful "power down + happy sparkle" chime
 export const playBeginnerOn = () => {
-  tone(880, 0.18, "sine", 0, 0.18);
-  tone(659, 0.22, "sine", 0.08, 0.18);
-  tone(523, 0.3, "sine", 0.18, 0.18);
+  // Soft "whoosh" power-down
+  noiseBurst(0.18, 0, 0.06);
+  // Bouncy ascending arpeggio (C-E-G-C major chord climb) — happy & friendly
+  tone(523, 0.12, "triangle", 0.05, 0.18);   // C5
+  tone(659, 0.12, "triangle", 0.13, 0.18);   // E5
+  tone(784, 0.12, "triangle", 0.21, 0.18);   // G5
+  tone(1047, 0.25, "triangle", 0.29, 0.22);  // C6 — sparkle finish
+  // Magical sparkle on top
+  tone(1568, 0.18, "sine", 0.32, 0.12);      // G6 shimmer
+  tone(2093, 0.22, "sine", 0.4, 0.1);        // C7 fairy dust
 };
