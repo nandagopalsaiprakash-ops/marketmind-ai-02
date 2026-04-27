@@ -197,50 +197,75 @@ const KpiDashboard = () => {
   }
 
   return (
-    <div className="h-full overflow-y-auto p-4 md:p-6 space-y-6">
-      {/* Header with refresh */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-h2 font-bold text-foreground">Marketing Overview</h2>
-          <p className="text-caption text-muted-foreground">Easy-to-read snapshot of how your website is performing</p>
+    <div className="h-full overflow-y-auto p-4 md:p-6 space-y-6 relative">
+      {/* Ambient color mesh background */}
+      <div className="absolute inset-0 gradient-mesh pointer-events-none -z-0" />
+
+      {/* Hero header */}
+      <div className="relative overflow-hidden rounded-2xl border border-border/40 p-5 md:p-6 gradient-glass">
+        <div className="absolute -top-16 -right-10 w-64 h-64 rounded-full opacity-40 blur-3xl gradient-violet" />
+        <div className="absolute -bottom-16 -left-10 w-64 h-64 rounded-full opacity-30 blur-3xl gradient-ocean" />
+        <div className="relative flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-primary/15 border border-primary/30 text-micro font-medium text-primary mb-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" /> Live overview
+            </div>
+            <h2 className="text-h2 font-bold gradient-text">Marketing Overview</h2>
+            <p className="text-caption text-muted-foreground mt-1">Easy-to-read snapshot of how your website is performing</p>
+          </div>
+          <button
+            onClick={fetchData}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-caption font-medium gradient-primary text-primary-foreground shadow-glow hover:opacity-90 transition-all"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            Refresh
+          </button>
         </div>
-        <button
-          onClick={fetchData}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-caption font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          Refresh
-        </button>
       </div>
 
       {/* Real-data Google Search Console section */}
-      <GscConnect />
-
-      <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-border/40" />
-        <span className="text-micro text-muted-foreground uppercase tracking-wider">Demo data</span>
-        <div className="h-px flex-1 bg-border/40" />
+      <div className="relative">
+        <GscConnect />
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-        {kpis.map((kpi, i) => (
-          <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
-            <Card className="glass-card border-border/30 hover:border-primary/30 transition-all">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <kpi.icon className="w-4 h-4 text-muted-foreground" />
-                  <span className={`text-caption font-medium flex items-center gap-1 ${kpi.up ? "text-green-400" : "text-red-400"}`}>
-                    {kpi.up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                    {kpi.change}
-                  </span>
+      <div className="relative flex items-center gap-3">
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
+        <span className="text-micro text-muted-foreground uppercase tracking-wider px-2 py-0.5 rounded-full bg-secondary/60 border border-border/40">Demo data</span>
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
+      </div>
+
+      {/* KPI Cards — vibrant gradient style */}
+      <div className="relative grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {kpis.map((kpi, i) => {
+          const s = kpiStyles[i % kpiStyles.length];
+          return (
+            <motion.div
+              key={kpi.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.08 }}
+              whileHover={{ y: -4 }}
+            >
+              <div className={`relative overflow-hidden rounded-2xl ${s.gradient} p-4 ring-1 ${s.ring} shadow-elevated`}>
+                {/* Decorative blob */}
+                <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-white/15 blur-2xl" />
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className={`w-9 h-9 rounded-xl ${s.iconBg} backdrop-blur-sm flex items-center justify-center`}>
+                      <kpi.icon className={`w-4 h-4 ${s.text}`} />
+                    </div>
+                    <span className={`text-micro font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full ${kpi.up ? "bg-emerald-500/25 text-emerald-50" : "bg-rose-500/25 text-rose-50"}`}>
+                      {kpi.up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                      {kpi.change}
+                    </span>
+                  </div>
+                  <p className={`text-h2 font-bold ${s.text} leading-tight`}>{kpi.value}</p>
+                  <p className={`text-caption ${s.sub} mt-1`}>{kpi.label}</p>
                 </div>
-                <p className="text-h3 font-bold text-foreground">{kpi.value}</p>
-                <p className="text-micro text-muted-foreground mt-1">{kpi.label}</p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
 
       {/* Charts Grid */}
