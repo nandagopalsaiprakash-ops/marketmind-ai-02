@@ -173,10 +173,10 @@ export default function ChatAssistant({ technicalMode, onTechnicalModeChange, on
   };
 
   const quickQuestions = [
-    "How to improve Google ranking",
-    "Best time to post on Instagram",
-    "How to run Google Ads campaigns",
-    "How to perform technical SEO audit",
+    "How do I show up on Google?",
+    "When should I post on Instagram?",
+    "How do Google Ads work?",
+    "What's SEO and why does it matter?",
   ];
 
   return (
