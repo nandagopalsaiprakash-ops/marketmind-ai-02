@@ -48,7 +48,7 @@ serve(async (req) => {
       if (lastMsg.role === "user") {
         processedMessages[processedMessages.length - 1] = {
           ...lastMsg,
-          content: `${lastMsg.content}\n\n[Technical Marketer Mode is ON — include tools, metrics, automation ideas, and technical workflows in your response]`,
+          content: `${lastMsg.content}\n\n[TECHNICAL MARKETER MODE = ON]\n\nIMPORTANT: The user has switched ON Technical Mode. They want a noticeably DEEPER, expert-level response than your normal beginner reply. Make the difference obvious by following this exact structure:\n\n1. 🎯 **Quick Title** + 1-line summary (still friendly, but precise)\n2. 🧠 **The "Why" Behind It** — 2-3 sentences explaining the underlying mechanism / how it actually works under the hood (algorithms, ranking signals, bidding logic, attribution, etc.). Still explain jargon in plain English so a learner can follow.\n3. 🛠️ **Step-by-Step Technical Workflow** — 5-7 concrete steps with exact actions, settings, or commands.\n4. 🔧 **Tools to Use** — 3-5 specific named tools, each with a one-line "what it does" and free vs paid note.\n5. 📊 **Metrics to Track** — list 3-5 KPIs with target benchmarks (e.g., "CTR > 2%", "LCP < 2.5s", "ROAS > 4x") and explain what each number means.\n6. ⚙️ **Automation Idea** — one practical workflow they can automate (Zapier/Make/n8n/script) with a brief how.\n7. ⚠️ **Common Pitfalls** — 2-3 mistakes beginners make and how to avoid them.\n8. 💡 **Pro Tip** — one advanced insight a senior marketer would share.\n\nKeep tone warm and beginner-respectful, but don't water it down — show the user this is the EXPERT version. Use markdown headings, bold, and bullet lists for scannability.`,
         };
       }
     }

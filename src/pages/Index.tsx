@@ -10,6 +10,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "@/hooks/useTheme";
 import { Sun, Moon, Search, Zap } from "lucide-react";
 import VoiceInput from "@/components/VoiceInput";
+import { useToast } from "@/hooks/use-toast";
 
 type Section = "chat" | "academy" | "strategy" | "tools" | "content" | "dashboard";
 
@@ -28,6 +29,23 @@ const Index = () => {
   const [conversationHistory, setConversationHistory] = useState<string[]>([]);
   const isMobile = useIsMobile();
   const { theme, toggleTheme } = useTheme();
+  const { toast } = useToast();
+
+  const handleTechnicalToggle = () => {
+    const next = !technicalMode;
+    setTechnicalMode(next);
+    if (next) {
+      toast({
+        title: "🔧 Technical Mode Enabled",
+        description: "Responses will now go deeper — with tools, metrics, automation ideas & step-by-step technical workflows. Perfect when you want the full picture!",
+      });
+    } else {
+      toast({
+        title: "✨ Beginner Mode Enabled",
+        description: "Back to simple, friendly explanations — no jargon, just easy steps anyone can follow.",
+      });
+    }
+  };
 
   const handleNewMessage = (msg: string) => {
     setConversationHistory(prev => [...prev, msg]);
@@ -57,15 +75,16 @@ const Index = () => {
           <div className="flex items-center gap-2">
             {/* Technical mode toggle */}
             <button
-              onClick={() => setTechnicalMode(!technicalMode)}
+              onClick={handleTechnicalToggle}
+              title={technicalMode ? "Technical mode is ON — click to switch back to beginner mode" : "Turn on technical mode for deeper, expert-level answers"}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-caption font-medium transition-all ${
                 technicalMode
-                  ? "bg-technical/15 text-technical border border-technical/30"
+                  ? "bg-technical/15 text-technical border border-technical/30 shadow-glow"
                   : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
               }`}
             >
-              <Zap className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Technical</span>
+              <Zap className={`w-3.5 h-3.5 ${technicalMode ? "fill-technical" : ""}`} />
+              <span className="hidden sm:inline">{technicalMode ? "Technical ON" : "Technical"}</span>
             </button>
 
             {/* Theme toggle */}
