@@ -26,6 +26,39 @@ const stats = [
   { label: "Updated", value: "Live", icon: TrendingUp, color: "text-success" },
 ];
 
+// Known official URLs for popular marketing tools. Anything missing falls back
+// to a Google search so the link always reaches *something* useful.
+const toolUrls: Record<string, string> = {
+  "Ahrefs": "https://ahrefs.com",
+  "SEMrush": "https://www.semrush.com",
+  "Moz": "https://moz.com",
+  "Screaming Frog": "https://www.screamingfrog.co.uk/seo-spider/",
+  "Google Search Console": "https://search.google.com/search-console",
+  "Google Analytics 4": "https://analytics.google.com",
+  "Google Analytics": "https://analytics.google.com",
+  "Mixpanel": "https://mixpanel.com",
+  "Amplitude": "https://amplitude.com",
+  "Hotjar": "https://www.hotjar.com",
+  "Mailchimp": "https://mailchimp.com",
+  "Klaviyo": "https://www.klaviyo.com",
+  "ConvertKit": "https://convertkit.com",
+  "HubSpot": "https://www.hubspot.com",
+  "Google Ads": "https://ads.google.com",
+  "Meta Ads Manager": "https://www.facebook.com/business/tools/ads-manager",
+  "LinkedIn Ads": "https://business.linkedin.com/marketing-solutions/ads",
+  "TikTok Ads": "https://ads.tiktok.com",
+  "Canva": "https://www.canva.com",
+  "Figma": "https://www.figma.com",
+  "Buffer": "https://buffer.com",
+  "Hootsuite": "https://www.hootsuite.com",
+  "Later": "https://later.com",
+  "Notion": "https://www.notion.so",
+};
+
+const getToolUrl = (name: string) =>
+  toolUrls[name] ||
+  `https://www.google.com/search?q=${encodeURIComponent(name + " official site")}`;
+
 export default function ToolsDashboard() {
   const [filter, setFilter] = useState<string | null>(null);
 
@@ -100,15 +133,18 @@ export default function ToolsDashboard() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
               {category.tools.map((tool, ti) => (
-                <motion.div
+                <motion.a
                   key={tool.name}
+                  href={getToolUrl(tool.name)}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: ci * 0.08 + ti * 0.03 }}
-                  className="glass-card p-4 hover:shadow-glow transition-all group"
+                  className="glass-card p-4 hover:shadow-glow transition-all group block cursor-pointer"
                 >
                   <div className="flex items-start justify-between mb-2">
-                    <h4 className="font-display font-semibold text-body text-foreground">{tool.name}</h4>
+                    <h4 className="font-display font-semibold text-body text-foreground group-hover:text-primary transition-colors">{tool.name}</h4>
                     <ExternalLink className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                   <p className="text-caption text-muted-foreground mb-3 leading-relaxed">{tool.description}</p>
@@ -122,7 +158,7 @@ export default function ToolsDashboard() {
                       <span className="text-secondary-foreground">{tool.when}</span>
                     </div>
                   </div>
-                </motion.div>
+                </motion.a>
               ))}
             </div>
           </motion.div>
