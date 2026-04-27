@@ -11,6 +11,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { Sun, Moon, Search, Zap } from "lucide-react";
 import VoiceInput from "@/components/VoiceInput";
 import PitStopPopup from "@/components/PitStopPopup";
+import { playTechnicalOn, playBeginnerOn } from "@/lib/sfx";
 
 type Section = "chat" | "academy" | "strategy" | "tools" | "content" | "dashboard";
 
@@ -38,6 +39,8 @@ const Index = () => {
     const next = !technicalMode;
     setTechnicalMode(next);
     setPitStop({ show: true, mode: next ? "technical" : "beginner" });
+    if (next) playTechnicalOn();
+    else playBeginnerOn();
   };
 
   const handleNewMessage = (msg: string) => {
