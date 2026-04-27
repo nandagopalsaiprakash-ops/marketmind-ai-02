@@ -10,7 +10,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "@/hooks/useTheme";
 import { Sun, Moon, Search, Zap } from "lucide-react";
 import VoiceInput from "@/components/VoiceInput";
-import { useToast } from "@/hooks/use-toast";
+import PitStopPopup from "@/components/PitStopPopup";
 
 type Section = "chat" | "academy" | "strategy" | "tools" | "content" | "dashboard";
 
@@ -27,24 +27,17 @@ const Index = () => {
   const [activeSection, setActiveSection] = useState<Section>("chat");
   const [technicalMode, setTechnicalMode] = useState(false);
   const [conversationHistory, setConversationHistory] = useState<string[]>([]);
+  const [pitStop, setPitStop] = useState<{ show: boolean; mode: "technical" | "beginner" }>({
+    show: false,
+    mode: "beginner",
+  });
   const isMobile = useIsMobile();
   const { theme, toggleTheme } = useTheme();
-  const { toast } = useToast();
 
   const handleTechnicalToggle = () => {
     const next = !technicalMode;
     setTechnicalMode(next);
-    if (next) {
-      toast({
-        title: "🔧 Technical Mode Enabled",
-        description: "Responses will now go deeper — with tools, metrics, automation ideas & step-by-step technical workflows. Perfect when you want the full picture!",
-      });
-    } else {
-      toast({
-        title: "✨ Beginner Mode Enabled",
-        description: "Back to simple, friendly explanations — no jargon, just easy steps anyone can follow.",
-      });
-    }
+    setPitStop({ show: true, mode: next ? "technical" : "beginner" });
   };
 
   const handleNewMessage = (msg: string) => {
