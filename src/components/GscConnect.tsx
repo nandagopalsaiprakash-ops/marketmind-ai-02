@@ -187,6 +187,7 @@ export default function GscConnect() {
     setSeries(data.series || []);
     setKeywords(data.keywords || []);
     setPages(data.pages || []);
+    setIsDemo(false);
     setPhase("ready");
   };
 
