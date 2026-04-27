@@ -164,12 +164,13 @@
   .gradient-accent {
     background: var(--gradient-accent);
   }
-  .gradient-warm {
-    background: var(--gradient-warm);
-  }
-  .gradient-surface {
-    background: var(--gradient-surface);
-  }
+  .gradient-warm { background: var(--gradient-warm); }
+  .gradient-surface { background: var(--gradient-surface); }
+  .gradient-mesh { background: var(--gradient-mesh); }
+  .gradient-sunset { background: var(--gradient-sunset); }
+  .gradient-ocean { background: var(--gradient-ocean); }
+  .gradient-violet { background: var(--gradient-violet); }
+  .gradient-lime { background: var(--gradient-lime); }
   .gradient-glass {
     background: var(--gradient-glass);
     backdrop-filter: blur(16px) saturate(1.8);
