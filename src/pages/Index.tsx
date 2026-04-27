@@ -46,6 +46,11 @@ const Index = () => {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
+      <PitStopPopup
+        show={pitStop.show}
+        mode={pitStop.mode}
+        onClose={() => setPitStop(p => ({ ...p, show: false }))}
+      />
       <AppSidebar
         activeSection={activeSection}
         onSectionChange={setActiveSection}
