@@ -380,14 +380,32 @@ export default function GscConnect() {
       {/* Connected dashboard */}
       {phase === "ready" && summary && (
         <>
+          {/* Beginner-friendly tip */}
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
+            <Sparkles className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-body text-foreground font-medium">New here? Read it like this 👇</p>
+              <p className="text-caption text-muted-foreground mt-0.5">
+                Each card below is one simple number about your website. Hover any card for a plain-English explanation.
+                Scroll down for an AI plan with easy actions you can do today — no marketing degree needed.
+              </p>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             {kpis.map((kpi, i) => (
               <motion.div key={kpi.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                <Card className="glass-card border-border/30">
+                <Card className="glass-card border-border/30 hover:border-primary/40 transition-all" title={kpi.hint}>
                   <CardContent className="p-4">
-                    <kpi.icon className="w-4 h-4 text-muted-foreground mb-2" />
+                    <div className="flex items-center justify-between mb-2">
+                      <kpi.icon className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-micro px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium whitespace-nowrap">
+                        {kpi.good}
+                      </span>
+                    </div>
                     <p className="text-h3 font-bold text-foreground">{kpi.value}</p>
                     <p className="text-micro text-muted-foreground mt-1">{kpi.label}</p>
+                    <p className="text-micro text-muted-foreground/80 mt-2 leading-snug">{kpi.hint}</p>
                   </CardContent>
                 </Card>
               </motion.div>
