@@ -414,20 +414,30 @@ export default function GscConnect() {
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             {kpis.map((kpi, i) => (
-              <motion.div key={kpi.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                <Card className="glass-card border-border/30 hover:border-primary/40 transition-all" title={kpi.hint}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <kpi.icon className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-micro px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium whitespace-nowrap">
+              <motion.div
+                key={kpi.label}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                whileHover={{ y: -4 }}
+                title={kpi.hint}
+              >
+                <div className={`relative overflow-hidden rounded-2xl ${kpi.gradient} p-4 ring-1 ${kpi.ring} shadow-elevated h-full`}>
+                  <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-white/15 blur-2xl" />
+                  <div className="relative">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className={`w-9 h-9 rounded-xl ${kpi.iconBg} backdrop-blur-sm flex items-center justify-center`}>
+                        <kpi.icon className={`w-4 h-4 ${kpi.text}`} />
+                      </div>
+                      <span className={`text-micro px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-sm ${kpi.text} font-semibold whitespace-nowrap`}>
                         {kpi.good}
                       </span>
                     </div>
-                    <p className="text-h3 font-bold text-foreground">{kpi.value}</p>
-                    <p className="text-micro text-muted-foreground mt-1">{kpi.label}</p>
-                    <p className="text-micro text-muted-foreground/80 mt-2 leading-snug">{kpi.hint}</p>
-                  </CardContent>
-                </Card>
+                    <p className={`text-h2 font-bold ${kpi.text} leading-tight`}>{kpi.value}</p>
+                    <p className={`text-caption ${kpi.sub} mt-1 font-medium`}>{kpi.label}</p>
+                    <p className={`text-micro ${kpi.sub} mt-2 leading-snug opacity-90`}>{kpi.hint}</p>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
