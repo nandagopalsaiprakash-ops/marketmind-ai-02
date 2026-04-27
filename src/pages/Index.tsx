@@ -10,6 +10,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "@/hooks/useTheme";
 import { Sun, Moon, Search, Zap } from "lucide-react";
 import VoiceInput from "@/components/VoiceInput";
+import { useToast } from "@/hooks/use-toast";
 
 type Section = "chat" | "academy" | "strategy" | "tools" | "content" | "dashboard";
 
