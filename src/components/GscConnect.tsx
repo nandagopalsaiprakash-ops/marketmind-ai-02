@@ -58,6 +58,7 @@ export default function GscConnect() {
   const [recs, setRecs] = useState<Recs | null>(null);
   const [loadingRecs, setLoadingRecs] = useState(false);
   const [pendingUrl, setPendingUrl] = useState<string>("");
+  const [isDemo, setIsDemo] = useState(false);
 
   // Handle return from OAuth — auto-resume analysis for the URL the user typed
   useEffect(() => {
@@ -144,6 +145,7 @@ export default function GscConnect() {
     setPhase("checking");
     setRecs(null);
     setSummary(null);
+    setIsDemo(false);
 
     // Try real GSC data first if already connected — fall back to demo data instantly
     try {
@@ -167,8 +169,9 @@ export default function GscConnect() {
     setSeries(demo.series);
     setKeywords(demo.keywords);
     setPages(demo.pages);
+    setIsDemo(true);
     setPhase("ready");
-    toast({ title: "Analysis ready", description: "Showing estimated data for your site." });
+    toast({ title: "Estimated analysis ready", description: "Connect Google Search Console for real data." });
   };
 
   const loadMetrics = async (_site: string) => {
@@ -184,6 +187,7 @@ export default function GscConnect() {
     setSeries(data.series || []);
     setKeywords(data.keywords || []);
     setPages(data.pages || []);
+    setIsDemo(false);
     setPhase("ready");
   };
 
@@ -257,10 +261,42 @@ export default function GscConnect() {
             </button>
           </form>
           {matchedSite && phase === "ready" && (
-            <p className="text-micro text-muted-foreground mt-2">Showing data for <span className="text-primary">{matchedSite}</span> · last 28 days</p>
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              <p className="text-micro text-muted-foreground">
+                {isDemo ? "Showing estimates for" : "Showing real data for"}{" "}
+                <span className="text-primary">{matchedSite}</span> · last 28 days
+              </p>
+              {isDemo ? (
+                <span className="text-micro px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-400 border border-orange-500/30 font-medium">
+                  Estimated data
+                </span>
+              ) : (
+                <span className="text-micro px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-medium">
+                  Live GSC data
+                </span>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Demo data disclaimer */}
+      {phase === "ready" && isDemo && (
+        <Card className="glass-card border-orange-500/30">
+          <CardContent className="p-4 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="font-display font-semibold text-body text-foreground">These numbers are estimates, not real traffic</h4>
+              <p className="text-caption text-muted-foreground mt-1">
+                We're showing illustrative sample data based on your URL so you can preview the dashboard. Connect Google Search Console to see your site's actual clicks, impressions, keywords and rankings.
+              </p>
+              <button onClick={connect} className="mt-3 gradient-primary text-primary-foreground px-4 py-2 rounded-xl text-body font-medium shadow-glow inline-flex items-center gap-2">
+                <Globe className="w-4 h-4" /> Connect Google Search Console
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* States */}
       {phase === "needs_connect" && (
