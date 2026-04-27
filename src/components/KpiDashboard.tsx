@@ -145,6 +145,13 @@ const KpiDashboard = () => {
   const ctrChange = latest && prev ? (latest.ctr - prev.ctr).toFixed(1) : "0";
   const bounceChange = latest && prev ? (latest.bounce_rate - prev.bounce_rate).toFixed(1) : "0";
 
+  const kpiStyles = [
+    { gradient: "gradient-ocean",  ring: "ring-cyan-400/40",   iconBg: "bg-white/15",  text: "text-white", sub: "text-white/80" },
+    { gradient: "gradient-violet", ring: "ring-purple-400/40", iconBg: "bg-white/15",  text: "text-white", sub: "text-white/80" },
+    { gradient: "gradient-lime",   ring: "ring-lime-400/40",   iconBg: "bg-black/15",  text: "text-slate-900", sub: "text-slate-900/75" },
+    { gradient: "gradient-sunset", ring: "ring-pink-400/40",   iconBg: "bg-white/15",  text: "text-white", sub: "text-white/85" },
+  ];
+
   const kpis = [
     { label: "Total Visitors", value: totalTraffic.toLocaleString(), change: `${+trafficChange >= 0 ? "+" : ""}${trafficChange}%`, up: +trafficChange >= 0, icon: Globe },
     { label: "Click Rate", value: latest ? `${latest.ctr}%` : "—", change: `${+ctrChange >= 0 ? "+" : ""}${ctrChange}%`, up: +ctrChange >= 0, icon: MousePointerClick },
@@ -190,59 +197,87 @@ const KpiDashboard = () => {
   }
 
   return (
-    <div className="h-full overflow-y-auto p-4 md:p-6 space-y-6">
-      {/* Header with refresh */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-h2 font-bold text-foreground">Marketing Overview</h2>
-          <p className="text-caption text-muted-foreground">Easy-to-read snapshot of how your website is performing</p>
+    <div className="h-full overflow-y-auto p-4 md:p-6 space-y-6 relative">
+      {/* Ambient color mesh background */}
+      <div className="absolute inset-0 gradient-mesh pointer-events-none -z-0" />
+
+      {/* Hero header */}
+      <div className="relative overflow-hidden rounded-2xl border border-border/40 p-5 md:p-6 gradient-glass">
+        <div className="absolute -top-16 -right-10 w-64 h-64 rounded-full opacity-40 blur-3xl gradient-violet" />
+        <div className="absolute -bottom-16 -left-10 w-64 h-64 rounded-full opacity-30 blur-3xl gradient-ocean" />
+        <div className="relative flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-primary/15 border border-primary/30 text-micro font-medium text-primary mb-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" /> Live overview
+            </div>
+            <h2 className="text-h2 font-bold gradient-text">Marketing Overview</h2>
+            <p className="text-caption text-muted-foreground mt-1">Easy-to-read snapshot of how your website is performing</p>
+          </div>
+          <button
+            onClick={fetchData}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-caption font-medium gradient-primary text-primary-foreground shadow-glow hover:opacity-90 transition-all"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            Refresh
+          </button>
         </div>
-        <button
-          onClick={fetchData}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-caption font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          Refresh
-        </button>
       </div>
 
       {/* Real-data Google Search Console section */}
-      <GscConnect />
-
-      <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-border/40" />
-        <span className="text-micro text-muted-foreground uppercase tracking-wider">Demo data</span>
-        <div className="h-px flex-1 bg-border/40" />
+      <div className="relative">
+        <GscConnect />
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-        {kpis.map((kpi, i) => (
-          <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
-            <Card className="glass-card border-border/30 hover:border-primary/30 transition-all">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <kpi.icon className="w-4 h-4 text-muted-foreground" />
-                  <span className={`text-caption font-medium flex items-center gap-1 ${kpi.up ? "text-green-400" : "text-red-400"}`}>
-                    {kpi.up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                    {kpi.change}
-                  </span>
+      <div className="relative flex items-center gap-3">
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
+        <span className="text-micro text-muted-foreground uppercase tracking-wider px-2 py-0.5 rounded-full bg-secondary/60 border border-border/40">Demo data</span>
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
+      </div>
+
+      {/* KPI Cards — vibrant gradient style */}
+      <div className="relative grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {kpis.map((kpi, i) => {
+          const s = kpiStyles[i % kpiStyles.length];
+          return (
+            <motion.div
+              key={kpi.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.08 }}
+              whileHover={{ y: -4 }}
+            >
+              <div className={`relative overflow-hidden rounded-2xl ${s.gradient} p-4 ring-1 ${s.ring} shadow-elevated`}>
+                {/* Decorative blob */}
+                <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-white/15 blur-2xl" />
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className={`w-9 h-9 rounded-xl ${s.iconBg} backdrop-blur-sm flex items-center justify-center`}>
+                      <kpi.icon className={`w-4 h-4 ${s.text}`} />
+                    </div>
+                    <span className={`text-micro font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full ${kpi.up ? "bg-emerald-500/25 text-emerald-50" : "bg-rose-500/25 text-rose-50"}`}>
+                      {kpi.up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                      {kpi.change}
+                    </span>
+                  </div>
+                  <p className={`text-h2 font-bold ${s.text} leading-tight`}>{kpi.value}</p>
+                  <p className={`text-caption ${s.sub} mt-1`}>{kpi.label}</p>
                 </div>
-                <p className="text-h3 font-bold text-foreground">{kpi.value}</p>
-                <p className="text-micro text-muted-foreground mt-1">{kpi.label}</p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
 
       {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+      <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Traffic Chart */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-          <Card className="glass-card border-border/30">
+          <Card className="glass-card border-border/30 hover:border-primary/40 transition-all">
             <CardHeader className="pb-2">
-              <CardTitle className="text-body-lg font-semibold text-foreground">Website Visitors</CardTitle>
+              <CardTitle className="text-body-lg font-semibold flex items-center gap-2">
+                <span className="w-1.5 h-5 rounded-full gradient-ocean" />
+                Website Visitors
+              </CardTitle>
               <p className="text-caption text-muted-foreground">How many people came to your site each month, and from where</p>
             </CardHeader>
             <CardContent>
@@ -250,17 +285,25 @@ const KpiDashboard = () => {
                 <AreaChart data={trafficChartData}>
                   <defs>
                     <linearGradient id="fillOrganic" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                      <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                      <stop offset="0%" stopColor="hsl(168 80% 50%)" stopOpacity={0.55} />
+                      <stop offset="100%" stopColor="hsl(168 80% 50%)" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="fillPaid" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(260 70% 60%)" stopOpacity={0.4} />
+                      <stop offset="100%" stopColor="hsl(260 70% 60%)" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="fillDirect" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(330 80% 60%)" stopOpacity={0.3} />
+                      <stop offset="100%" stopColor="hsl(330 80% 60%)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.3} />
                   <XAxis dataKey="month" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Area type="monotone" dataKey="organic_traffic" stroke="hsl(var(--primary))" fill="url(#fillOrganic)" strokeWidth={2} />
-                  <Area type="monotone" dataKey="paid_traffic" stroke="hsl(var(--accent))" fill="transparent" strokeWidth={2} strokeDasharray="4 4" />
-                  <Area type="monotone" dataKey="direct_traffic" stroke="hsl(var(--muted-foreground))" fill="transparent" strokeWidth={1.5} />
+                  <Area type="monotone" dataKey="organic_traffic" stroke="hsl(168 80% 55%)" fill="url(#fillOrganic)" strokeWidth={2.5} />
+                  <Area type="monotone" dataKey="paid_traffic" stroke="hsl(260 70% 65%)" fill="url(#fillPaid)" strokeWidth={2.5} />
+                  <Area type="monotone" dataKey="direct_traffic" stroke="hsl(330 80% 65%)" fill="url(#fillDirect)" strokeWidth={2} />
                 </AreaChart>
               </ChartContainer>
             </CardContent>
@@ -269,19 +312,28 @@ const KpiDashboard = () => {
 
         {/* CTR Chart */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-          <Card className="glass-card border-border/30">
+          <Card className="glass-card border-border/30 hover:border-primary/40 transition-all">
             <CardHeader className="pb-2">
-              <CardTitle className="text-body-lg font-semibold text-foreground">Click Rate</CardTitle>
+              <CardTitle className="text-body-lg font-semibold flex items-center gap-2">
+                <span className="w-1.5 h-5 rounded-full gradient-violet" />
+                Click Rate
+              </CardTitle>
               <p className="text-caption text-muted-foreground">Out of everyone who saw your site, how many clicked</p>
             </CardHeader>
             <CardContent>
               <ChartContainer config={ctrConfig} className="h-[240px] w-full">
                 <LineChart data={ctrChartData}>
+                  <defs>
+                    <linearGradient id="ctrStroke" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="hsl(260 70% 60%)" />
+                      <stop offset="100%" stopColor="hsl(330 80% 60%)" />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.3} />
                   <XAxis dataKey="week" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line type="monotone" dataKey="ctr" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ fill: "hsl(var(--primary))", r: 4 }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="ctr" stroke="url(#ctrStroke)" strokeWidth={3} dot={{ fill: "hsl(290 75% 60%)", r: 4, strokeWidth: 0 }} activeDot={{ r: 7, fill: "hsl(290 75% 65%)" }} />
                 </LineChart>
               </ChartContainer>
             </CardContent>
@@ -290,21 +342,38 @@ const KpiDashboard = () => {
 
         {/* Rankings Chart */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
-          <Card className="glass-card border-border/30">
+          <Card className="glass-card border-border/30 hover:border-primary/40 transition-all">
             <CardHeader className="pb-2">
-              <CardTitle className="text-body-lg font-semibold text-foreground">Search Position</CardTitle>
+              <CardTitle className="text-body-lg font-semibold flex items-center gap-2">
+                <span className="w-1.5 h-5 rounded-full gradient-lime" />
+                Search Position
+              </CardTitle>
               <p className="text-caption text-muted-foreground">Where your keywords appear on Google search results</p>
             </CardHeader>
             <CardContent>
               <ChartContainer config={rankingsConfig} className="h-[240px] w-full">
                 <BarChart data={rankingsChartData}>
+                  <defs>
+                    <linearGradient id="barTop3" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(152 70% 55%)" />
+                      <stop offset="100%" stopColor="hsl(85 75% 50%)" />
+                    </linearGradient>
+                    <linearGradient id="barTop10" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(200 90% 60%)" />
+                      <stop offset="100%" stopColor="hsl(168 80% 50%)" />
+                    </linearGradient>
+                    <linearGradient id="barTop20" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(260 70% 60%)" />
+                      <stop offset="100%" stopColor="hsl(290 75% 55%)" />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.3} />
                   <XAxis dataKey="month" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="top3" fill="hsl(142 71% 45%)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="top10" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="top20" fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} opacity={0.5} />
+                  <Bar dataKey="top3" fill="url(#barTop3)" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="top10" fill="url(#barTop10)" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="top20" fill="url(#barTop20)" radius={[6, 6, 0, 0]} opacity={0.85} />
                 </BarChart>
               </ChartContainer>
             </CardContent>
@@ -313,26 +382,41 @@ const KpiDashboard = () => {
 
         {/* Rankings Table */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
-          <Card className="glass-card border-border/30">
+          <Card className="glass-card border-border/30 hover:border-primary/40 transition-all">
             <CardHeader className="pb-2">
-              <CardTitle className="text-body-lg font-semibold text-foreground">Your Keywords</CardTitle>
+              <CardTitle className="text-body-lg font-semibold flex items-center gap-2">
+                <span className="w-1.5 h-5 rounded-full gradient-sunset" />
+                Your Keywords
+              </CardTitle>
               <p className="text-caption text-muted-foreground">Words people search to find you (lower number = higher on Google)</p>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {keywords.map((item) => {
+                {keywords.map((item, idx) => {
                   const change = item.previous_position ? item.previous_position - item.position : 0;
+                  const rankColor =
+                    item.position <= 3 ? "gradient-lime text-slate-900"
+                    : item.position <= 10 ? "gradient-ocean text-white"
+                    : "gradient-violet text-white";
                   return (
-                    <div key={item.keyword} className="flex items-center justify-between p-2.5 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <span className="text-caption font-mono text-muted-foreground w-5">#{item.position}</span>
-                        <span className="text-body text-foreground">{item.keyword}</span>
+                    <motion.div
+                      key={item.keyword}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.04 }}
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-secondary/30 hover:bg-secondary/60 border border-transparent hover:border-primary/30 transition-all"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className={`text-micro font-bold w-7 h-7 rounded-lg flex items-center justify-center ${rankColor} shadow-sm flex-shrink-0`}>
+                          {item.position}
+                        </span>
+                        <span className="text-body text-foreground truncate">{item.keyword}</span>
                       </div>
-                      <span className={`text-caption font-medium flex items-center gap-1 ${change >= 0 ? "text-green-400" : "text-red-400"}`}>
+                      <span className={`text-caption font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full ${change >= 0 ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"}`}>
                         {change >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                         {change >= 0 ? "+" : ""}{change}
                       </span>
-                    </div>
+                    </motion.div>
                   );
                 })}
                 {keywords.length === 0 && (
