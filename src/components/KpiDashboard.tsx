@@ -145,6 +145,13 @@ const KpiDashboard = () => {
   const ctrChange = latest && prev ? (latest.ctr - prev.ctr).toFixed(1) : "0";
   const bounceChange = latest && prev ? (latest.bounce_rate - prev.bounce_rate).toFixed(1) : "0";
 
+  const kpiStyles = [
+    { gradient: "gradient-ocean",  ring: "ring-cyan-400/40",   iconBg: "bg-white/15",  text: "text-white", sub: "text-white/80" },
+    { gradient: "gradient-violet", ring: "ring-purple-400/40", iconBg: "bg-white/15",  text: "text-white", sub: "text-white/80" },
+    { gradient: "gradient-lime",   ring: "ring-lime-400/40",   iconBg: "bg-black/15",  text: "text-slate-900", sub: "text-slate-900/75" },
+    { gradient: "gradient-sunset", ring: "ring-pink-400/40",   iconBg: "bg-white/15",  text: "text-white", sub: "text-white/85" },
+  ];
+
   const kpis = [
     { label: "Total Visitors", value: totalTraffic.toLocaleString(), change: `${+trafficChange >= 0 ? "+" : ""}${trafficChange}%`, up: +trafficChange >= 0, icon: Globe },
     { label: "Click Rate", value: latest ? `${latest.ctr}%` : "—", change: `${+ctrChange >= 0 ? "+" : ""}${ctrChange}%`, up: +ctrChange >= 0, icon: MousePointerClick },
