@@ -257,32 +257,49 @@ export default function ChatAssistant({ technicalMode, onTechnicalModeChange, on
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-3 md:p-5 space-y-5">
+      <div className="flex-1 overflow-y-auto p-3 md:p-5 space-y-5 relative">
+        {/* Decorative floating orbs */}
+        <div className="orb orb-1 w-72 h-72 bg-primary/30 -top-20 -left-20" />
+        <div className="orb orb-2 w-80 h-80 bg-accent/25 top-40 -right-20" />
+        <div className="orb orb-1 w-60 h-60 bg-primary/20 bottom-10 left-1/3" style={{ animationDelay: "3s" }} />
+
         {messages.length === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center h-full text-center space-y-6"
+            className="flex flex-col items-center justify-center h-full text-center space-y-6 relative z-10"
           >
-            <div className="w-20 h-20 rounded-2xl gradient-primary flex items-center justify-center shadow-glow">
-              <Sparkles className="w-10 h-10 text-primary-foreground" />
-            </div>
+            <motion.div
+              animate={{ y: [0, -8, 0], rotate: [0, 4, -4, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="w-24 h-24 rounded-3xl gradient-primary flex items-center justify-center shadow-glow relative"
+            >
+              <Sparkles className="w-12 h-12 text-primary-foreground" />
+              <span className="absolute -top-1 -right-1 text-2xl animate-pulse">✨</span>
+            </motion.div>
             <div>
-              <h3 className="font-display font-bold text-h2 text-foreground mb-2">Welcome to MarketMind</h3>
+              <h3 className="font-display font-bold text-h2 gradient-text mb-2">Hey there! 👋 I'm MarketMind</h3>
               <p className="text-body text-muted-foreground max-w-md">
-                Your AI-powered marketing assistant. Ask questions, get strategies, and learn marketing.
+                Your friendly marketing buddy! Ask me anything — I'll explain it like we're chatting over coffee ☕
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-lg">
-              {quickQuestions.map(q => (
-                <button
-                  key={q}
-                  onClick={() => setInput(q)}
-                  className="text-left px-4 py-3.5 rounded-2xl glass-card text-body text-foreground hover:border-primary/50 hover:shadow-glow transition-all group"
-                >
-                  <span className="group-hover:text-primary transition-colors">{q}</span>
-                </button>
-              ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg">
+              {quickQuestions.map((q, i) => {
+                const emojis = ["🎯", "📸", "💰", "🔍"];
+                return (
+                  <motion.button
+                    key={q}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.08 }}
+                    onClick={() => setInput(q)}
+                    className="text-left px-4 py-3.5 rounded-2xl glass-card text-body text-foreground hover:border-primary/50 hover-lift transition-all group flex items-center gap-3"
+                  >
+                    <span className="text-2xl group-hover:scale-125 transition-transform">{emojis[i]}</span>
+                    <span className="group-hover:text-primary transition-colors">{q}</span>
+                  </motion.button>
+                );
+              })}
             </div>
           </motion.div>
         )}
