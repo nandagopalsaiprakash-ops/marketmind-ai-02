@@ -528,7 +528,10 @@ export default function GscConnect() {
                   </motion.div>
                 )}
                 {!recs && !loadingRecs && (
-                  <p className="text-caption text-muted-foreground py-4">Click "Generate plan" to get personalized marketing recommendations based on your site's real Google data.</p>
+                  <div className="flex items-center gap-2 py-4 text-caption text-muted-foreground">
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-primary" />
+                    Cooking up your beginner-friendly plan…
+                  </div>
                 )}
               </AnimatePresence>
             </CardContent>
