@@ -221,12 +221,44 @@ export default function GscConnect() {
 
   const kpis = summary
     ? [
-        { label: "Visitors from Google", value: summary.clicks.toLocaleString(), icon: Globe },
-        { label: "Times you appeared", value: summary.impressions.toLocaleString(), icon: BarChart3 },
-        { label: "Click rate", value: `${summary.avg_ctr}%`, icon: MousePointerClick },
-        { label: "Avg. Google rank", value: `#${summary.avg_position}`, icon: TrendingUp },
+        {
+          label: "Visitors from Google",
+          value: summary.clicks.toLocaleString(),
+          icon: Globe,
+          hint: "People who clicked your site from Google search in the last 28 days.",
+          good: summary.clicks > 100 ? "Nice traffic 👍" : "Room to grow 🌱",
+        },
+        {
+          label: "Times you appeared",
+          value: summary.impressions.toLocaleString(),
+          icon: BarChart3,
+          hint: "How often your site showed up in Google search results.",
+          good: "More = more chances to be seen",
+        },
+        {
+          label: "Click rate",
+          value: `${summary.avg_ctr}%`,
+          icon: MousePointerClick,
+          hint: "Out of everyone who saw you, how many clicked.",
+          good: summary.avg_ctr >= 3 ? "Healthy ✨" : "Aim for 3%+",
+        },
+        {
+          label: "Avg. Google rank",
+          value: `#${summary.avg_position}`,
+          icon: TrendingUp,
+          hint: "Your average position on Google. Lower is better.",
+          good: summary.avg_position <= 10 ? "Page 1! 🎉" : "Aim for top 10",
+        },
       ]
     : [];
+
+  // Auto-generate the AI plan when data is ready (no extra clicks for beginners)
+  useEffect(() => {
+    if (phase === "ready" && summary && !recs && !loadingRecs) {
+      generateRecs();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, summary]);
 
   return (
     <div className="space-y-6">
