@@ -269,12 +269,15 @@ const KpiDashboard = () => {
       </div>
 
       {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+      <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Traffic Chart */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-          <Card className="glass-card border-border/30">
+          <Card className="glass-card border-border/30 hover:border-primary/40 transition-all">
             <CardHeader className="pb-2">
-              <CardTitle className="text-body-lg font-semibold text-foreground">Website Visitors</CardTitle>
+              <CardTitle className="text-body-lg font-semibold flex items-center gap-2">
+                <span className="w-1.5 h-5 rounded-full gradient-ocean" />
+                Website Visitors
+              </CardTitle>
               <p className="text-caption text-muted-foreground">How many people came to your site each month, and from where</p>
             </CardHeader>
             <CardContent>
@@ -282,17 +285,25 @@ const KpiDashboard = () => {
                 <AreaChart data={trafficChartData}>
                   <defs>
                     <linearGradient id="fillOrganic" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                      <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                      <stop offset="0%" stopColor="hsl(168 80% 50%)" stopOpacity={0.55} />
+                      <stop offset="100%" stopColor="hsl(168 80% 50%)" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="fillPaid" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(260 70% 60%)" stopOpacity={0.4} />
+                      <stop offset="100%" stopColor="hsl(260 70% 60%)" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="fillDirect" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(330 80% 60%)" stopOpacity={0.3} />
+                      <stop offset="100%" stopColor="hsl(330 80% 60%)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.3} />
                   <XAxis dataKey="month" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Area type="monotone" dataKey="organic_traffic" stroke="hsl(var(--primary))" fill="url(#fillOrganic)" strokeWidth={2} />
-                  <Area type="monotone" dataKey="paid_traffic" stroke="hsl(var(--accent))" fill="transparent" strokeWidth={2} strokeDasharray="4 4" />
-                  <Area type="monotone" dataKey="direct_traffic" stroke="hsl(var(--muted-foreground))" fill="transparent" strokeWidth={1.5} />
+                  <Area type="monotone" dataKey="organic_traffic" stroke="hsl(168 80% 55%)" fill="url(#fillOrganic)" strokeWidth={2.5} />
+                  <Area type="monotone" dataKey="paid_traffic" stroke="hsl(260 70% 65%)" fill="url(#fillPaid)" strokeWidth={2.5} />
+                  <Area type="monotone" dataKey="direct_traffic" stroke="hsl(330 80% 65%)" fill="url(#fillDirect)" strokeWidth={2} />
                 </AreaChart>
               </ChartContainer>
             </CardContent>
@@ -301,19 +312,28 @@ const KpiDashboard = () => {
 
         {/* CTR Chart */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-          <Card className="glass-card border-border/30">
+          <Card className="glass-card border-border/30 hover:border-primary/40 transition-all">
             <CardHeader className="pb-2">
-              <CardTitle className="text-body-lg font-semibold text-foreground">Click Rate</CardTitle>
+              <CardTitle className="text-body-lg font-semibold flex items-center gap-2">
+                <span className="w-1.5 h-5 rounded-full gradient-violet" />
+                Click Rate
+              </CardTitle>
               <p className="text-caption text-muted-foreground">Out of everyone who saw your site, how many clicked</p>
             </CardHeader>
             <CardContent>
               <ChartContainer config={ctrConfig} className="h-[240px] w-full">
                 <LineChart data={ctrChartData}>
+                  <defs>
+                    <linearGradient id="ctrStroke" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="hsl(260 70% 60%)" />
+                      <stop offset="100%" stopColor="hsl(330 80% 60%)" />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.3} />
                   <XAxis dataKey="week" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line type="monotone" dataKey="ctr" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ fill: "hsl(var(--primary))", r: 4 }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="ctr" stroke="url(#ctrStroke)" strokeWidth={3} dot={{ fill: "hsl(290 75% 60%)", r: 4, strokeWidth: 0 }} activeDot={{ r: 7, fill: "hsl(290 75% 65%)" }} />
                 </LineChart>
               </ChartContainer>
             </CardContent>
@@ -322,21 +342,38 @@ const KpiDashboard = () => {
 
         {/* Rankings Chart */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
-          <Card className="glass-card border-border/30">
+          <Card className="glass-card border-border/30 hover:border-primary/40 transition-all">
             <CardHeader className="pb-2">
-              <CardTitle className="text-body-lg font-semibold text-foreground">Search Position</CardTitle>
+              <CardTitle className="text-body-lg font-semibold flex items-center gap-2">
+                <span className="w-1.5 h-5 rounded-full gradient-lime" />
+                Search Position
+              </CardTitle>
               <p className="text-caption text-muted-foreground">Where your keywords appear on Google search results</p>
             </CardHeader>
             <CardContent>
               <ChartContainer config={rankingsConfig} className="h-[240px] w-full">
                 <BarChart data={rankingsChartData}>
+                  <defs>
+                    <linearGradient id="barTop3" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(152 70% 55%)" />
+                      <stop offset="100%" stopColor="hsl(85 75% 50%)" />
+                    </linearGradient>
+                    <linearGradient id="barTop10" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(200 90% 60%)" />
+                      <stop offset="100%" stopColor="hsl(168 80% 50%)" />
+                    </linearGradient>
+                    <linearGradient id="barTop20" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(260 70% 60%)" />
+                      <stop offset="100%" stopColor="hsl(290 75% 55%)" />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.3} />
                   <XAxis dataKey="month" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="top3" fill="hsl(142 71% 45%)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="top10" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="top20" fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} opacity={0.5} />
+                  <Bar dataKey="top3" fill="url(#barTop3)" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="top10" fill="url(#barTop10)" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="top20" fill="url(#barTop20)" radius={[6, 6, 0, 0]} opacity={0.85} />
                 </BarChart>
               </ChartContainer>
             </CardContent>
@@ -345,26 +382,41 @@ const KpiDashboard = () => {
 
         {/* Rankings Table */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
-          <Card className="glass-card border-border/30">
+          <Card className="glass-card border-border/30 hover:border-primary/40 transition-all">
             <CardHeader className="pb-2">
-              <CardTitle className="text-body-lg font-semibold text-foreground">Your Keywords</CardTitle>
+              <CardTitle className="text-body-lg font-semibold flex items-center gap-2">
+                <span className="w-1.5 h-5 rounded-full gradient-sunset" />
+                Your Keywords
+              </CardTitle>
               <p className="text-caption text-muted-foreground">Words people search to find you (lower number = higher on Google)</p>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {keywords.map((item) => {
+                {keywords.map((item, idx) => {
                   const change = item.previous_position ? item.previous_position - item.position : 0;
+                  const rankColor =
+                    item.position <= 3 ? "gradient-lime text-slate-900"
+                    : item.position <= 10 ? "gradient-ocean text-white"
+                    : "gradient-violet text-white";
                   return (
-                    <div key={item.keyword} className="flex items-center justify-between p-2.5 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <span className="text-caption font-mono text-muted-foreground w-5">#{item.position}</span>
-                        <span className="text-body text-foreground">{item.keyword}</span>
+                    <motion.div
+                      key={item.keyword}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.04 }}
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-secondary/30 hover:bg-secondary/60 border border-transparent hover:border-primary/30 transition-all"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className={`text-micro font-bold w-7 h-7 rounded-lg flex items-center justify-center ${rankColor} shadow-sm flex-shrink-0`}>
+                          {item.position}
+                        </span>
+                        <span className="text-body text-foreground truncate">{item.keyword}</span>
                       </div>
-                      <span className={`text-caption font-medium flex items-center gap-1 ${change >= 0 ? "text-green-400" : "text-red-400"}`}>
+                      <span className={`text-caption font-semibold flex items-center gap-1 px-2 py-0.5 rounded-full ${change >= 0 ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"}`}>
                         {change >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                         {change >= 0 ? "+" : ""}{change}
                       </span>
-                    </div>
+                    </motion.div>
                   );
                 })}
                 {keywords.length === 0 && (
