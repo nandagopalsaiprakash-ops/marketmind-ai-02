@@ -377,7 +377,7 @@ export default function GscConnect() {
           <Card className="glass-card border-border/30">
             <CardHeader className="pb-2">
               <CardTitle className="text-body-lg">Words people search to find you</CardTitle>
-              <p className="text-caption text-muted-foreground">Top 25 keywords from real Google search data</p>
+              <p className="text-caption text-muted-foreground">Top 25 keywords driving traffic to your site</p>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-1">
