@@ -312,22 +312,18 @@ export default function GscConnect() {
         </CardContent>
       </Card>
 
-      {/* Demo data disclaimer */}
+      {/* Demo data — soft inline note (no big pull-away CTA) */}
       {phase === "ready" && isDemo && (
-        <Card className="glass-card border-orange-500/30">
-          <CardContent className="p-4 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h4 className="font-display font-semibold text-body text-foreground">These numbers are estimates, not real traffic</h4>
-              <p className="text-caption text-muted-foreground mt-1">
-                We're showing illustrative sample data based on your URL so you can preview the dashboard. Connect Google Search Console to see your site's actual clicks, impressions, keywords and rankings.
-              </p>
-              <button onClick={connect} className="mt-3 gradient-primary text-primary-foreground px-4 py-2 rounded-xl text-body font-medium shadow-glow inline-flex items-center gap-2">
-                <Globe className="w-4 h-4" /> Connect Google Search Console
-              </button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-start gap-2 px-3 py-2 rounded-xl bg-orange-500/10 border border-orange-500/20 text-caption text-muted-foreground">
+          <AlertCircle className="w-3.5 h-3.5 text-orange-400 flex-shrink-0 mt-0.5" />
+          <span>
+            These are <span className="text-orange-400 font-medium">friendly estimates</span> so you can explore right away.
+            Want your real numbers later?{" "}
+            <button onClick={connect} className="text-primary hover:underline font-medium">
+              Connect Google (optional)
+            </button>
+          </span>
+        </div>
       )}
 
       {/* States */}
