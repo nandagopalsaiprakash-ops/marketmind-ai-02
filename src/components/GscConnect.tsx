@@ -58,6 +58,7 @@ export default function GscConnect() {
   const [recs, setRecs] = useState<Recs | null>(null);
   const [loadingRecs, setLoadingRecs] = useState(false);
   const [pendingUrl, setPendingUrl] = useState<string>("");
+  const [isDemo, setIsDemo] = useState(false);
 
   // Handle return from OAuth — auto-resume analysis for the URL the user typed
   useEffect(() => {
