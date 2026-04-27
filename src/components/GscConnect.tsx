@@ -145,6 +145,7 @@ export default function GscConnect() {
     setPhase("checking");
     setRecs(null);
     setSummary(null);
+    setIsDemo(false);
 
     // Try real GSC data first if already connected — fall back to demo data instantly
     try {
@@ -168,8 +169,9 @@ export default function GscConnect() {
     setSeries(demo.series);
     setKeywords(demo.keywords);
     setPages(demo.pages);
+    setIsDemo(true);
     setPhase("ready");
-    toast({ title: "Analysis ready", description: "Showing estimated data for your site." });
+    toast({ title: "Estimated analysis ready", description: "Connect Google Search Console for real data." });
   };
 
   const loadMetrics = async (_site: string) => {
